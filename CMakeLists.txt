@@ -1,6 +1,6 @@
 # cmake version, project name, language
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
-project(tsunami-simulator Fortran)
+project(tsunami Fortran)
 
 # set output paths for modules, archives, and executables
 set(CMAKE_Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/include)
