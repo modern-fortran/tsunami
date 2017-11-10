@@ -1,5 +1,8 @@
 # tsunami
 
+[![Build Status](https://travis-ci.org/fortran-in-action/tsunami.svg?branch=master)](https://travis-ci.org/fortran-in-action/tsunami)
+[![GitHub issues](https://img.shields.io/github/issues/fortran-in-action/tsunami.svg)](https://github.com/fortran-in-action/tsunami/issues)
+
 A shallow water equations solver. Companion running example 
 for the upcoming book Fortran in Action by Manning Publications.
 
