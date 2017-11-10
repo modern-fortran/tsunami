@@ -43,3 +43,5 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Cray)
 endif()
 
 add_executable(tsunami src/app/tsunami.f90)
+enable_testing()
+add_test(tsunami bin/tsunami)
