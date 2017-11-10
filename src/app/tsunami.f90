@@ -1,12 +1,14 @@
 program tsunami
 
-! Solution of a 1-d linear advection equation:
+! Tsunami simulator
 !
-! du/dt + c du/dx = 0
+! This version solves the linearized 1-d advection equation:
+!
+!     du/dt + c du/dx = 0
 !
 ! Discretized as:
 !
-! u_i^{n+1} = u_i^n - c * (u_i^n - u_{i-1}^n) / dx * dt
+!     u^{n+1}_i = u^n_i - c * dt * (u^n_{i} - u^n_{i-1}) / dx
 
 implicit none
 
