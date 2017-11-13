@@ -12,6 +12,8 @@ program tsunami
 
 implicit none
 
+integer :: i, n
+
 integer, parameter :: idm = 100 ! grid size in x
 integer, parameter :: ndm = 100 ! number of time steps
 
@@ -21,17 +23,12 @@ real, parameter :: c = 1 ! phase speed [m/s]
 
 real, parameter :: pi = 3.14159256
 
-integer :: i,n
-
-real, dimension(idm) :: du, u, u_init
+real, dimension(idm) :: du, u
 
 ! initialize a gaussian blob centered at i = 25
 do i = 1, idm
   u(i) = exp(-0.02*(i-25)**2)
 end do
-
-! store initial state
-u_init = u
 
 ! write initial state to screen
 write(*,*)0, u
