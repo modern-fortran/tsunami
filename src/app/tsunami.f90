@@ -23,8 +23,6 @@ real(kind=real32), parameter :: dt = 1 ! time step [s]
 real(kind=real32), parameter :: dx = 1 ! grid spacing [m]
 real(kind=real32), parameter :: c = 1 ! phase speed [m/s]
 
-real(kind=real32), parameter :: pi = 3.14159256
-
 real(kind=real32), dimension(im) :: du, u
 
 ! initialize a gaussian blob centered at i = 25
@@ -35,8 +33,7 @@ end do
 ! write initial state to screen
 write(*,*)0, u
 
-! time loop
-do n = 1, nm
+time_loop: do n = 1, nm
 
   ! calculate the upstream difference of h in x
   do i = 2, im
@@ -54,6 +51,6 @@ do n = 1, nm
   ! write current state to screen
   write(*,*)n, u
 
-enddo
+end do time_loop
 
 end program tsunami
