@@ -10,7 +10,7 @@ program tsunami
 !
 !     u^{n+1}_i = u^n_i - c * dt * (u^n_{i} - u^n_{i-1}) / dx
 
-use iso_fortran_env, only: int32, real32
+use iso_fortran_env, only: int32, real32, output_unit
 
 implicit none
 
@@ -31,7 +31,7 @@ do i = 1, im
 end do
 
 ! write initial state to screen
-write(*,*)0, u
+write(unit=output_unit, fmt=*)0, u
 
 time_loop: do n = 1, nm
 
@@ -49,7 +49,7 @@ time_loop: do n = 1, nm
   end do
 
   ! write current state to screen
-  write(*,*)n, u
+  write(unit=output_unit, fmt=*)n, u
 
 end do time_loop
 
