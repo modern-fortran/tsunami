@@ -11,6 +11,7 @@ program tsunami
 !     u^{n+1}_i = u^n_i - c * dt * (u^n_{i} - u^n_{i-1}) / dx
 
 use iso_fortran_env, only: int32, real32, output_unit
+use mod_diff
 
 implicit none
 
