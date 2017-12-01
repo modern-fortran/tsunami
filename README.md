@@ -14,9 +14,15 @@ for the upcoming book Fortran in Action by Manning Publications.
 git clone https://github.com/fortran-in-action/tsunami
 ```
 
-### Switching to different tags/snapshots
+### Switching between different tags
 
-TODO
+The code is organized in tags so you can easily go back and forth 
+different stages of the app as it is taught in the book.
+For example, below command will take you to the tag `2c`:
+
+```
+git checkout 2c
+```
 
 ### Building the model
 
@@ -44,4 +50,5 @@ Inside the `build/bin` directory, type:
 
 ### Plotting the results
 
-TODO
+All the plotting code is located in the `plotting` directory.
+You will need a Python build with numpy and matplotlib packages installed.
