@@ -10,7 +10,7 @@ public :: diffu, diffc
 contains
 
 
-function diffu(x, periodic) result(dx)
+pure function diffu(x, periodic) result(dx)
   !! Returns a upstream difference of a 1-d array. Applies periodic boundary
   !! conditions if `periodic .eqv. .true.`.
   real(kind=real32), dimension(:), intent(in) :: x
@@ -48,7 +48,7 @@ function diffu(x, periodic) result(dx)
 endfunction diffu
 
 
-function diffc(x, periodic) result(dx)
+pure function diffc(x, periodic) result(dx)
   !! Returns a centered difference of a 1-d array. Applies periodic boundary
   !! conditions if `periodic .eqv. .true.`.
   real(kind=real32), dimension(:), intent(in) :: x

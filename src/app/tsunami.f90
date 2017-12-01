@@ -11,7 +11,7 @@ program tsunami
 !     u^{n+1}_i = u^n_i - c * dt * (u^n_{i} - u^n_{i-1}) / dx
 
 use iso_fortran_env, only: int32, real32, output_unit
-use mod_diff
+use mod_diff, only: diffu
 
 implicit none
 
@@ -36,18 +36,8 @@ write(unit=output_unit, fmt=*)0, u
 
 time_loop: do n = 1, nm
 
-  ! calculate the upstream difference of h in x
-  do i = 2, im
-    du(i) = u(i) - u(i-1)
-  end do
-
-  ! apply periodic boundary condition on the left 
-  du(1) = u(1) - u(im)
-
   ! compute u at next time step
-  do i = 1, im
-    u(i) = u(i) - c * du(i) / dx * dt
-  end do
+  u = u - c * diffu(u, periodic=.true.) / dx * dt
 
   ! write current state to screen
   write(unit=output_unit, fmt=*)n, u
