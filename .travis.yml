@@ -32,5 +32,5 @@ install:
     - make
     
 script:
-    - ./bin/tsunami
+    - ./bin/tsunami > /dev/null
 
