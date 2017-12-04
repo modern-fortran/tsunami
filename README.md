@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/scivision/tsunami.svg?branch=master)](https://travis-ci.org/scivision/tsunami)
+
 # tsunami
 
 [![Build Status](https://travis-ci.org/fortran-in-action/tsunami.svg?branch=master)](https://travis-ci.org/fortran-in-action/tsunami)
