@@ -22,7 +22,6 @@ data = [line.rstrip().split() for line in open(input_file).readlines()]
 time = [float(line[0]) for line in data]
 u = np.array([[float(x) for x in line[1:]] for line in data])
 x = np.arange(1, u.shape[1]+1)
-time_steps = [0, 25, 50, 75]
 
 for n in range(len(time)):
     print(n)
@@ -36,8 +35,8 @@ for n in range(len(time)):
     plt.plot(x, u[n], 'b-')
     plt.fill_between(x, 0, u[n], color='b', alpha=0.4)
     plt.grid(True)
-    plt.xlabel('Spatial grid index',fontsize=16)
-    plt.ylabel('Amplitude',fontsize=16)
-    plt.title(r'Initial state, $u(x, 0)$', fontsize=16)
-    plt.savefig('u_'+'%3.3i' % n+'.png',dpi=100)
+    plt.xlabel('Distance [m]',fontsize=16)
+    plt.ylabel('Height [m]',fontsize=16)
+    plt.title(r'$h(x, t)$, time step '+str(n), fontsize=16)
+    plt.savefig('h_'+'%3.3i' % n+'.png',dpi=100)
     plt.close(fig)
