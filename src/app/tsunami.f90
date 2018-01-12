@@ -8,24 +8,24 @@ program tsunami
 !
 !     dh/dt + h_mean du/dx = 0
 
-use iso_fortran_env, only: int32, real32, output_unit
+use iso_fortran_env, only: wip=>int32, wp=>real32, output_unit
 use mod_diff, only: diffc, diffu
 
 implicit none
 
-integer(kind=int32) :: i, n
+integer(kind=wip) :: i, n
 
-integer(kind=int32), parameter :: im = 100 ! grid size in x
-integer(kind=int32), parameter :: nm = 1000 ! number of time steps
+integer(kind=wip), parameter :: im = 100 ! grid size in x
+integer(kind=wip), parameter :: nm = 1000 ! number of time steps
 
-real(kind=real32), parameter :: dt = 0.1 ! time step [s]
-real(kind=real32), parameter :: dx = 1 ! grid spacing [m]
-real(kind=real32), parameter :: c = 1 ! phase speed [m/s]
+real(kind=wp), parameter :: dt = 0.1 ! time step [s]
+real(kind=wp), parameter :: dx = 1 ! grid spacing [m]
+real(kind=wp), parameter :: c = 1 ! phase speed [m/s]
 
-real(kind=real32), parameter :: g = 9.8 ! gravitational acceleration [m/s]
+real(kind=wp), parameter :: g = 9.8 ! gravitational acceleration [m/s]
 
-real(kind=real32), dimension(im) :: du, u, h
-real(kind=real32), dimension(im) :: h_mean
+real(kind=wp), dimension(im) :: du, u, h
+real(kind=wp), dimension(im) :: h_mean
 
 ! initialize a gaussian blob centered at i = 25
 do i = 1, im

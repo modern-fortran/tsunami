@@ -1,5 +1,5 @@
 module mod_diff
-use iso_fortran_env, only: real32
+use iso_fortran_env, only: wp=>real32
 
 implicit none
 
@@ -13,11 +13,11 @@ contains
 pure function diffu(x, periodic) result(dx)
   !! Returns a upstream difference of a 1-d array. Applies periodic boundary
   !! conditions if `periodic .eqv. .true.`.
-  real(kind=real32), dimension(:), intent(in) :: x
+  real(kind=wp), dimension(:), intent(in) :: x
     !! Input array
   logical, intent(in), optional :: periodic
     !! If true, periodic boundary conditions area applied. Default false.
-  real(kind=real32), dimension(:), allocatable :: dx
+  real(kind=wp), dimension(:), allocatable :: dx
   logical :: periodic_
   integer :: idm
 
@@ -45,17 +45,17 @@ pure function diffu(x, periodic) result(dx)
     dx(1) = dx(2)
   endif
 
-endfunction diffu
+end function diffu
 
 
 pure function diffc(x, periodic) result(dx)
   !! Returns a centered difference of a 1-d array. Applies periodic boundary
   !! conditions if `periodic .eqv. .true.`.
-  real(kind=real32), dimension(:), intent(in) :: x
+  real(kind=wp), dimension(:), intent(in) :: x
     !! Input array
   logical, intent(in), optional :: periodic
     !! If true, periodic boundary conditions area applied. Default false.
-  real(kind=real32), dimension(:), allocatable :: dx
+  real(kind=wp), dimension(:), allocatable :: dx
   logical :: periodic_
   integer :: idm
 
@@ -85,7 +85,7 @@ pure function diffc(x, periodic) result(dx)
     dx(idm) = x(idm)-x(idm-1)
   endif
 
-endfunction diffc
+end function diffc
 
 
-endmodule mod_diff
+end module mod_diff
