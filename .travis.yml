@@ -27,6 +27,7 @@ before_install:
     fi
 
 install: 
+    - mkdir build
     - cd build
     - cmake ..
     - make
