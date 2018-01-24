@@ -59,8 +59,9 @@ git checkout 2c
 
 Dependencies:
 
-* `gfortran`
-* `cmake`
+```sh
+apt install gfortran cmake make
+```
 
 ```
 mkdir build
