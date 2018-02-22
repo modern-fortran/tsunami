@@ -16,7 +16,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 
-dt = 0.01
+dt = 0.02
 
 # read data into a list
 data = [line.rstrip().split() for line in open(input_file).readlines()]
@@ -41,5 +41,5 @@ for n in range(len(time)):
     plt.xlabel('Distance [m]',fontsize=16)
     plt.ylabel('Height [m]',fontsize=16)
     plt.title(r'Water elevation [m], time = '+'%5.1f' % (n*dt)+' s', fontsize=16)
-    plt.savefig('h_'+'%3.3i' % n+'.png',dpi=100)
+    plt.savefig('h_'+'%4.4i' % n+'.png',dpi=100)
     plt.close(fig)

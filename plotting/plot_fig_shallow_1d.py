@@ -15,7 +15,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 
-dt = 0.1
+dt = 0.02
 
 # read data into a list
 data = [line.rstrip().split() for line in open(input_file).readlines()]
@@ -23,7 +23,8 @@ data = [line.rstrip().split() for line in open(input_file).readlines()]
 time = [float(line[0]) for line in data]
 u = np.array([[float(x) for x in line[1:]] for line in data])
 x = np.arange(1, u.shape[1]+1)
-time_steps = [0, 160, 7420, 9990]
+#time_steps = [0, 160, 7420, 9990]
+time_steps = [0, 80, 3152, 4862]
 
 fig = plt.figure(figsize=(8,10))
 axes = [plt.subplot2grid((4, 1), (row, 0), colspan=1, rowspan=1)

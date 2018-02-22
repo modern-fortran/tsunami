@@ -49,13 +49,13 @@ git clone https://github.com/fortran-in-action/tsunami
 
 The code is organized in tags so you can easily go back and forth 
 different stages of the app as it is taught in the book.
-For example, below command will take you to the tag `2c`:
+For example, below command will take you to the tag `3b`:
 
 ```
-git checkout 2c
+git checkout 3b
 ```
 
-### Building the model
+## Building the model
 
 Dependencies:
 
@@ -72,7 +72,7 @@ make
 
 The executable will be built in the `build/bin` directory.
 
-### Running the model
+## Running the model
 
 Inside the `build/bin` directory, type:
 
@@ -80,7 +80,19 @@ Inside the `build/bin` directory, type:
 ./tsunami
 ```
 
-### Plotting the results
+## Plotting the results
 
 All the plotting code is located in the `plotting` directory.
-You will need a Python build with numpy and matplotlib packages installed.
+You will need a Python build (either 2.7 or 3.x is fine) 
+with numpy and matplotlib packages installed.
+
+If you're setting up Python from scratch, I recomment using Python 3
+and creating a dedicated virtual environment. 
+For example, in `tsunami/plotting` directory:
+
+```
+python3 -m venv venv            # create new python env
+source venv/bin/activate        # activate python env
+pip install -U pip              # upgrade installer
+pip install -r requirements.txt # install dependencies
+```
