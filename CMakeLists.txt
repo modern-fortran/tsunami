@@ -42,9 +42,9 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Cray)
   set(CMAKE_Fortran_FLAGS_RELEASE "-O3")
 endif()
 
-add_library(diff src/lib/mod_diff.f90)
-add_executable(tsunami src/app/tsunami.f90)
-target_link_libraries(tsunami diff)
+add_library(tsunami src/lib/mod_diff.f90 src/lib/mod_parallel.f90)
+add_executable(app src/app/tsunami.f90)
+target_link_libraries(app tsunami)
 
 enable_testing()
-add_test(tsunami bin/tsunami)
+add_test(tsunami bin/app)
