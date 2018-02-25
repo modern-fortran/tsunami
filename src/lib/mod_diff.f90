@@ -2,7 +2,7 @@ module mod_diff
 
   ! Module that provides finite difference functions.
 
-  use iso_fortran_env, only: real32
+  use mod_kinds, only: ik, rk
 
   implicit none
 
@@ -14,15 +14,15 @@ contains
   pure function diffc(x) result(dx)
     ! Returns a centered difference of a 1-d array,
     ! with periodic boundary condition.
-    real(kind=real32), dimension(:), intent(in) :: x
-    real(kind=real32), dimension(:), allocatable :: dx
-    integer :: i, idm
+    real(kind=rk), dimension(:), intent(in) :: x
+    real(kind=rk), dimension(:), allocatable :: dx
+    integer(kind=ik) :: i, idm
 
     idm = size(x)
     allocate(dx(idm))
 
-    dx(1) = 0.5*(x(2)-x(idm))
-    dx(idm) = 0.5*(x(1)-x(idm-1))
+    dx(1) = 0.5 * (x(2) - x(idm))
+    dx(idm) = 0.5 * (x(1) - x(idm-1))
 
     do concurrent(i = 2:idm-1)
       dx(i) = 0.5 * (x(i+1) - x(i-1))
@@ -33,9 +33,9 @@ contains
   pure function diffu(x) result(dx)
     ! Returns an upstream difference of a 1-d array,
     ! with periodic boundary condition.
-    real(kind=real32), dimension(:), intent(in) :: x
-    real(kind=real32), dimension(:), allocatable :: dx
-    integer :: i, idm
+    real(kind=rk), dimension(:), intent(in) :: x
+    real(kind=rk), dimension(:), allocatable :: dx
+    integer(kind=ik) :: i, idm
 
     idm = size(x)
     allocate(dx(idm))

@@ -3,6 +3,8 @@ module mod_parallel
   ! A module to provide parallel facilities 
   ! to the shallow water solver.
 
+  use mod_kinds, only: ik, rk
+
   implicit none
 
   private
@@ -15,9 +17,9 @@ contains
     ! Given input global array size, return start and end index
     ! of a parallel 1-d tile that correspond to this image.
 
-    integer, intent(in) :: dims
-    integer, dimension(2) :: tile_indices
-    integer :: offset, tile_size
+    integer(kind=ik), intent(in) :: dims
+    integer(kind=ik), dimension(2) :: tile_indices
+    integer(kind=ik) :: offset, tile_size
 
     tile_size = dims / num_images()
 

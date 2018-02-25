@@ -24,8 +24,9 @@ endif()
 
 # compiler flags for gfortran
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
-  set(CMAKE_Fortran_FLAGS_DEBUG "-fcoarray=single -O0 -g -C -fbacktrace")
-  set(CMAKE_Fortran_FLAGS_RELEASE "-fcoarray=single -O3")
+  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fcoarray=single -cpp")
+  set(CMAKE_Fortran_FLAGS_DEBUG "-O0 -g -C -fbacktrace")
+  set(CMAKE_Fortran_FLAGS_RELEASE "-O3")
 endif()
 
 # compiler flags for ifort
@@ -42,7 +43,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Cray)
   set(CMAKE_Fortran_FLAGS_RELEASE "-O3")
 endif()
 
-add_library(tsunami src/lib/mod_diff.f90 src/lib/mod_parallel.f90)
+add_library(tsunami src/lib/mod_diff.f90 src/lib/mod_kinds.f90 src/lib/mod_parallel.f90)
 add_executable(app src/app/tsunami.f90)
 target_link_libraries(app tsunami)
 
