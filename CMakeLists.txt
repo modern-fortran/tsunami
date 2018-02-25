@@ -13,7 +13,16 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "release")
 endif()
 
-# hande precision
+# handle integer size
+if(INT)
+  message(STATUS "Configuring build for ${INT}-bit integers")
+  add_definitions(-DINT${INT})
+else()
+  message(STATUS "Configuring build for 32-bit integers")
+  add_definitions(-DINT32)
+endif()
+
+# handle real size
 if(REAL)
   message(STATUS "Configuring build for ${REAL}-bit reals")
   add_definitions(-DREAL${REAL})
