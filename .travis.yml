@@ -29,7 +29,7 @@ before_install:
 install: 
     - mkdir build
     - cd build
-    - cmake ..
+    - cmake .. -DTRAVIS=1
     - make
     
 script:

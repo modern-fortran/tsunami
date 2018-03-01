@@ -33,7 +33,12 @@ endif()
 
 # compiler flags for gfortran
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
-  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fcoarray=single -cpp")
+  if(TRAVIS)
+    message(STATUS "Travis-CI: Building with -fcoarray-single")
+    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fcoarray=single -cpp")
+  else()
+    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -cpp")
+  endif()
   set(CMAKE_Fortran_FLAGS_DEBUG "-O0 -g -C -fbacktrace")
   set(CMAKE_Fortran_FLAGS_RELEASE "-O3")
 endif()
