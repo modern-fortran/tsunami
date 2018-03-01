@@ -7,11 +7,28 @@ module mod_diff
   implicit none
 
   private
-  public :: diffc, diffu
+  public :: diffc, diffc_periodic, diffu
 
 contains
 
   pure function diffc(x) result(dx)
+    ! Returns a centered difference of a 1-d array,
+    ! with periodic boundary condition.
+    real(kind=rk), dimension(:), intent(in) :: x
+    real(kind=rk), dimension(:), allocatable :: dx
+    integer(kind=ik) :: i, idm
+
+    idm = size(x)
+    allocate(dx(idm))
+    dx = 0
+
+    do concurrent(i = 2:idm-1)
+      dx(i) = 0.5 * (x(i+1) - x(i-1))
+    end do
+
+  end function diffc
+
+  pure function diffc_periodic(x) result(dx)
     ! Returns a centered difference of a 1-d array,
     ! with periodic boundary condition.
     real(kind=rk), dimension(:), intent(in) :: x
@@ -28,7 +45,7 @@ contains
       dx(i) = 0.5 * (x(i+1) - x(i-1))
     end do
 
-  end function diffc
+  end function diffc_periodic
 
   pure function diffu(x) result(dx)
     ! Returns an upstream difference of a 1-d array,
