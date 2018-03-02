@@ -11,7 +11,7 @@ program tsunami
   use iso_fortran_env, only: output_unit
   use mod_diff, only: diff => diffc
   use mod_kinds, only: ik, rk
-  use mod_parallel, only: tile_indices
+  use mod_parallel, only: tile_indices, tile_neighbors
 
   implicit none
 
@@ -31,29 +31,13 @@ program tsunami
   integer(kind=ik), parameter :: ipos = 25
   real(kind=rk), parameter :: decay = 0.02
 
+  integer(kind=ik), dimension(2) :: indices, neighbors
   integer(kind=ik) :: image_left, image_right
   integer(kind=ik) :: its, ite, is, ie ! start and end tile indices
-  integer(kind=ik), dimension(2) :: indices
 
-  logical :: parallel
-
-  parallel = num_images() > 1
-
-  if (parallel) then
-    if (this_image() == 1) then
-      image_left = num_images()
-      image_right = 2
-    else if (this_image() > 1 .and. this_image() < num_images()) then
-      image_left = this_image() - 1
-      image_right = this_image() + 1
-    else
-      image_left = num_images() - 1
-      image_right = 1
-    end if
-  else
-    image_left = 1
-    image_right = 1
-  end if
+  neighbors = tile_neighbors()
+  image_left = neighbors(1)
+  image_right = neighbors(2)
 
   indices = tile_indices(im)
   is = indices(1)

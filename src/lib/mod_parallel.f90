@@ -8,7 +8,7 @@ module mod_parallel
   implicit none
 
   private
-  public :: tile_indices
+  public :: tile_indices, tile_neighbors
 
 contains
 
@@ -35,5 +35,31 @@ contains
     end if
 
   end function tile_indices
+
+  pure function tile_neighbors()
+
+    ! Returns the image indices corresponding 
+    ! to left and right neighbor tiles.
+
+    integer(kind=ik), dimension(2) :: tile_neighbors
+    integer(kind=ik) :: image_left, image_right
+
+    if (num_images() > 1) then
+      image_left = this_image() - 1
+      image_right = this_image() + 1
+      if (this_image() == 1) then
+        image_left = num_images()
+      else if (this_image() == num_images()) then
+        image_right = 1
+      end if
+    else
+      image_left = 1
+      image_right = 1
+    end if
+
+    tile_neighbors(1) = image_left
+    tile_neighbors(2) = image_right
+
+  end function tile_neighbors
 
 end module mod_parallel
