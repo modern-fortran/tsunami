@@ -4,7 +4,7 @@
 [![GitHub issues](https://img.shields.io/github/issues/fortran-in-action/tsunami.svg)](https://github.com/fortran-in-action/tsunami/issues)
 
 A shallow water equations solver. Companion running example 
-for the upcoming book Modern Fortran: Building Efficient Parallel Applications.
+for [Modern Fortran: Building Efficient Parallel Applications](https://www.manning.com/books/modern-fortran?a_aid=modernfortran&a_bid=2dc4d442).
 
 ## Try it in the cloud
 
