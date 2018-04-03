@@ -2,11 +2,13 @@ program tsunami
 
   ! Tsunami simulator
   !
-  ! This version solves the non-linear 1-d shallow water equation:
+  ! Solves the non-linear 1-d shallow water equation:
   !
   !     du/dt + u du/dx + g dh/dx= 0
   !
   !     dh/dt + d(hu)/dx = 0
+  !
+  ! This version is parallelized.
 
   use iso_fortran_env, only: output_unit
   use mod_diff, only: diff => diffc
@@ -25,8 +27,8 @@ program tsunami
 
   real(kind=rk), parameter :: g = 9.8 ! gravitational acceleration [m/s]
 
-  !real(kind=rk), dimension(im) :: h, hmean, u
-  real(kind=rk), dimension(:), codimension[:], allocatable :: h, hmean, u
+  real(kind=rk), dimension(:), codimension[:], allocatable :: h, u
+  real(kind=rk), dimension(:), allocatable :: hmean
 
   integer(kind=ik), parameter :: ipos = 25
   real(kind=rk), parameter :: decay = 0.02
@@ -48,13 +50,7 @@ program tsunami
 
   allocate(h(its:ite)[*])
   allocate(u(its:ite)[*])
-  allocate(hmean(its:ite)[*])
-
-  ! TODO Solution is reproducible only if tiles are even
-
-  !write(*,*)this_image(), image_left, image_right
-  !write(*,*)this_image(), is, ie, its, ite
-  !stop
+  allocate(hmean(its:ite))
 
   ! initialize a gaussian blob centered at i = 25
   do i = its, ite
