@@ -34,12 +34,12 @@ program tsunami
   real(kind=rk), parameter :: decay = 0.02
 
   integer(kind=ik), dimension(2) :: indices, neighbors
-  integer(kind=ik) :: image_left, image_right
+  integer(kind=ik) :: left, right
   integer(kind=ik) :: its, ite, is, ie ! start and end tile indices
 
   neighbors = tile_neighbors()
-  image_left = neighbors(1)
-  image_right = neighbors(2)
+  left = neighbors(1)
+  right = neighbors(2)
 
   indices = tile_indices(im)
   is = indices(1)
@@ -74,8 +74,8 @@ program tsunami
   time_loop: do n = 1, nm
 
     ! update halo for h
-    h(its) = h(ie)[image_left]
-    h(ite) = h(is)[image_right]
+    h(its) = h(ie)[left]
+    h(ite) = h(is)[right]
     sync all
 
     ! compute u at next time step
@@ -84,8 +84,8 @@ program tsunami
     sync all
 
     ! update halo for u
-    u(its) = u(ie)[image_left]
-    u(ite) = u(is)[image_right]
+    u(its) = u(ie)[left]
+    u(ite) = u(is)[right]
     sync all
 
     ! compute h at next time step
