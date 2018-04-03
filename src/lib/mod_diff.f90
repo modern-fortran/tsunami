@@ -13,7 +13,7 @@ contains
 
   pure function diffc(x) result(dx)
     ! Returns a centered difference of a 1-d array,
-    ! with periodic boundary condition.
+    ! without any boundary conditions applied.
     real(kind=rk), dimension(:), intent(in) :: x
     real(kind=rk), dimension(:), allocatable :: dx
     integer(kind=ik) :: i, idm
