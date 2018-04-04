@@ -57,16 +57,37 @@ git checkout 3b
 
 ## Building the model
 
-Dependencies:
+### System dependencies
 
-```sh
-apt install gfortran cmake make
+On Debian-based systems:
+
 ```
+sudo apt install gfortran cmake make
+```
+
+On Redhat-based systems:
+
+```
+sudo yum install gfortran cmake make
+```
+
+or
+
+```
+sudo dnf install gfortran cmake make
+```
+
+### Building OpenCoarrays
+
+To build OpenCoarrays, follow the instruction in Appendix A of the book.
+OpenCoarrays are required to build the parallel version of the model.
+
+### Building tsunami
 
 ```
 mkdir build
 cd build
-cmake ..
+FC=caf cmake ..
 make
 ```
 
