@@ -42,23 +42,23 @@ contains
     ! to left and right neighbor tiles.
 
     integer(kind=ik), dimension(2) :: tile_neighbors
-    integer(kind=ik) :: image_left, image_right
+    integer(kind=ik) :: left, right
 
     if (num_images() > 1) then
-      image_left = this_image() - 1
-      image_right = this_image() + 1
+      left = this_image() - 1
+      right = this_image() + 1
       if (this_image() == 1) then
-        image_left = num_images()
+        left = num_images()
       else if (this_image() == num_images()) then
-        image_right = 1
+        right = 1
       end if
     else
-      image_left = 1
-      image_right = 1
+      left = 1
+      right = 1
     end if
 
-    tile_neighbors(1) = image_left
-    tile_neighbors(2) = image_right
+    tile_neighbors(1) = left
+    tile_neighbors(2) = right
 
   end function tile_neighbors
 
