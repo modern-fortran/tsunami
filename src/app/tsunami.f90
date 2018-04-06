@@ -28,6 +28,7 @@ program tsunami
   real(kind=rk), parameter :: g = 9.8 ! gravitational acceleration [m/s]
 
   real(kind=rk), dimension(:), codimension[:], allocatable :: h, u
+  real(kind=rk), dimension(:), codimension[:], allocatable :: h_gather
   real(kind=rk), dimension(:), allocatable :: hmean
 
   integer(kind=ik), parameter :: ipos = 25
@@ -44,13 +45,16 @@ program tsunami
   indices = tile_indices(im)
   is = indices(1)
   ie = indices(2)
- 
+
   its = is - 1
   ite = ie + 1
 
   allocate(h(its:ite)[*])
   allocate(u(its:ite)[*])
   allocate(hmean(its:ite))
+
+  allocate(h_gather(im)[*])
+  h_gather = 0
 
   ! initialize a gaussian blob centered at i = 25
   do i = its, ite
@@ -63,13 +67,10 @@ program tsunami
   ! set mean water depth to 10 m
   hmean = 10
 
-  ! write current state to screen
-  do i = 1, num_images()
-    sync all
-    if (this_image() == i) then
-      write(unit=output_unit, fmt=*) 0, this_image(), h(is:ie)
-    end if
-  end do
+  ! gather to image 1 and write current state to screen
+  h_gather(is:ie)[1] = h(is:ie)
+  sync all
+  if (this_image() == 1)  write(unit=output_unit, fmt=*) 0, h_gather
 
   time_loop: do n = 1, nm
 
@@ -91,13 +92,10 @@ program tsunami
     ! compute h at next time step
     h = h - diff(u * (hmean + h)) / dx * dt
 
-    ! write current state to screen
-    do i = 1, num_images()
-      sync all
-      if (this_image() == i) then
-        write(unit=output_unit, fmt=*) n, this_image(), h(is:ie)
-      end if
-    end do
+    ! gather to image 1 and write current state to screen
+    h_gather(is:ie)[1] = h(is:ie)
+    sync all
+    if (this_image() == 1)  write(unit=output_unit, fmt=*) n, h_gather
 
   end do time_loop
 
