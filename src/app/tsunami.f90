@@ -37,6 +37,12 @@ program tsunami
   integer(kind=ik), dimension(2) :: indices, neighbors
   integer(kind=ik) :: left, right
   integer(kind=ik) :: its, ite, is, ie ! start and end tile indices
+  integer(kind=ik) :: ils, ile
+  integer(kind=ik) :: tile_size
+
+  if (mod(im, num_images()) > 0) then
+    error stop 'Error: im must be divisible by number of images'
+  end if
 
   neighbors = tile_neighbors()
   left = neighbors(1)
@@ -46,8 +52,12 @@ program tsunami
   is = indices(1)
   ie = indices(2)
 
-  its = is - 1
-  ite = ie + 1
+  tile_size = im / num_images()
+  its = 0
+  ite = tile_size + 1
+
+  ils = 1
+  ile = tile_size
 
   allocate(h(its:ite)[*])
   allocate(u(its:ite)[*])
@@ -57,8 +67,8 @@ program tsunami
   h_gather = 0
 
   ! initialize a gaussian blob centered at i = 25
-  do i = its, ite
-    h(i) = exp(-decay * (i - ipos)**2)
+  do i = is - 1, ie + 1
+    h(i-is+1) = exp(-decay * (i - ipos)**2)
   end do
 
   ! set initial velocity to zero
@@ -68,15 +78,15 @@ program tsunami
   hmean = 10
 
   ! gather to image 1 and write current state to screen
-  h_gather(is:ie)[1] = h(is:ie)
+  h_gather(is:ie)[1] = h(ils:ile)
   sync all
   if (this_image() == 1)  write(unit=output_unit, fmt=*) 0, h_gather
 
   time_loop: do n = 1, nm
 
     ! update halo for h
-    h(its) = h(ie)[left]
-    h(ite) = h(is)[right]
+    h(ite)[left] = h(ils)
+    h(its)[right] = h(ile)
     sync all
 
     ! compute u at next time step
@@ -85,15 +95,15 @@ program tsunami
     sync all
 
     ! update halo for u
-    u(its) = u(ie)[left]
-    u(ite) = u(is)[right]
+    u(ite)[left] = u(ils)
+    u(its)[right] = u(ile)
     sync all
 
     ! compute h at next time step
     h = h - diff(u * (hmean + h)) / dx * dt
 
     ! gather to image 1 and write current state to screen
-    h_gather(is:ie)[1] = h(is:ie)
+    h_gather(is:ie)[1] = h(ils:ile)
     sync all
     if (this_image() == 1)  write(unit=output_unit, fmt=*) n, h_gather
 
