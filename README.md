@@ -95,11 +95,20 @@ The executable will be built in the `build/bin` directory.
 
 ## Running the model
 
-Inside the `build/bin` directory, type:
+From the `build` directory, type:
 
 ```
-./tsunami
+bin/app
 ```
+
+If working with the parallel code, type:
+
+```
+cafrun -n 2 bin/app
+```
+
+to run on 2 images, for example.
+Change this number if you want to use more images.
 
 ## Plotting the results
 
