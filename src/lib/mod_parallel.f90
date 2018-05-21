@@ -17,9 +17,9 @@ contains
     ! Given input global array size, return start and end index
     ! of a parallel 1-d tile that correspond to this image.
 
-    integer(kind=ik), intent(in) :: dims
-    integer(kind=ik), dimension(2) :: tile_indices
-    integer(kind=ik) :: offset, tile_size
+    integer(ik), intent(in) :: dims
+    integer(ik) :: tile_indices(2)
+    integer(ik) :: offset, tile_size
 
     tile_size = dims / num_images()
 
@@ -41,8 +41,8 @@ contains
     ! Returns the image indices corresponding 
     ! to left and right neighbor tiles.
 
-    integer(kind=ik), dimension(2) :: tile_neighbors
-    integer(kind=ik) :: left, right
+    integer(ik) :: tile_neighbors(2)
+    integer(ik) :: left, right
 
     if (num_images() > 1) then
       left = this_image() - 1

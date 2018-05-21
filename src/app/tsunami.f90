@@ -17,29 +17,29 @@ program tsunami
 
   implicit none
 
-  integer(kind=ik) :: i, n
+  integer(ik) :: i, n
 
-  integer(kind=ik), parameter :: im = 100 ! grid size in x
-  integer(kind=ik), parameter :: nm = 5000 ! number of time steps
+  integer(ik), parameter :: im = 100 ! grid size in x
+  integer(ik), parameter :: nm = 5000 ! number of time steps
 
-  real(kind=rk), parameter :: dt = 0.02 ! time step [s]
-  real(kind=rk), parameter :: dx = 1 ! grid spacing [m]
+  real(rk), parameter :: dt = 0.02 ! time step [s]
+  real(rk), parameter :: dx = 1 ! grid spacing [m]
 
-  real(kind=rk), parameter :: g = 9.8 ! gravitational acceleration [m/s]
+  real(rk), parameter :: g = 9.8 ! gravitational acceleration [m/s]
 
-  real(kind=rk), allocatable :: h(:)[:], u(:)[:]
-  real(kind=rk), allocatable :: gather(:)[:]
-  real(kind=rk), allocatable :: hmean(:)
+  real(rk), allocatable :: h(:)[:], u(:)[:]
+  real(rk), allocatable :: gather(:)[:]
+  real(rk), allocatable :: hmean(:)
 
-  integer(kind=ik), parameter :: ipos = 25
-  real(kind=rk), parameter :: decay = 0.02
+  integer(ik), parameter :: ipos = 25
+  real(rk), parameter :: decay = 0.02
 
-  integer(kind=ik), dimension(2) :: indices, neighbors
-  integer(kind=ik) :: left, right
-  integer(kind=ik) :: is, ie ! global start and end indices
-  integer(kind=ik) :: ils, ile ! local start and end computational indices
-  integer(kind=ik) :: ims, ime ! local start and end memory indices
-  integer(kind=ik) :: tile_size
+  integer(ik), dimension(2) :: indices, neighbors
+  integer(ik) :: left, right
+  integer(ik) :: is, ie ! global start and end indices
+  integer(ik) :: ils, ile ! local start and end computational indices
+  integer(ik) :: ims, ime ! local start and end memory indices
+  integer(ik) :: tile_size
 
   if (mod(im, num_images()) > 0) then
     error stop 'Error: im must be divisible by number of images'
