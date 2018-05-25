@@ -1,7 +1,7 @@
 # tsunami
 
-[![Build Status](https://travis-ci.org/fortran-in-action/tsunami.svg?branch=master)](https://travis-ci.org/modern-fortran/tsunami)
-[![GitHub issues](https://img.shields.io/github/issues/fortran-in-action/tsunami.svg)](https://github.com/modern-fortran/tsunami/issues)
+[![Build Status](https://travis-ci.org/modern-fortran/tsunami.svg?branch=master)](https://travis-ci.org/modern-fortran/tsunami)
+[![GitHub issues](https://img.shields.io/github/issues/modern-fortran/tsunami.svg)](https://github.com/modern-fortran/tsunami/issues)
 
 A shallow water equations solver. Companion running example 
 for [Modern Fortran: Building Efficient Parallel Applications](https://www.manning.com/books/modern-fortran?a_aid=modernfortran&a_bid=2dc4d442).
