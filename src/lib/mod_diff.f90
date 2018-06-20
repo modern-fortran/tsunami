@@ -8,8 +8,33 @@ module mod_diff
 
   private
   public :: diffc, diffc_periodic, diffu
+  public :: diffc_2d_x, diffc_2d_y
 
 contains
+
+  pure function diffc_2d_x(x) result(dx)
+    real(rk), intent(in) :: x(:,:)
+    real(rk) :: dx(size(x, dim=1), size(x, dim=2))
+    integer(ik) :: i, im
+    im = size(x, dim=1)
+    dx(1,:) = 0.5 * (x(2,:) - x(im,:))
+    dx(im,:) = 0.5 * (x(1,:) - x(im-1,:))
+    do concurrent(i = 2:im-1)
+      dx(i,:) = 0.5 * (x(i+1,:) - x(i-1,:))
+    end do
+  end function diffc_2d_x
+
+  pure function diffc_2d_y(x) result(dx)
+    real(rk), intent(in) :: x(:,:)
+    real(rk) :: dx(size(x, dim=1), size(x, dim=2))
+    integer(ik) :: j, jm
+    jm = size(x, dim=2)
+    dx(:,1) = 0.5 * (x(:,2) - x(:,jm))
+    dx(:,jm) = 0.5 * (x(:,1) - x(:,jm-1))
+    do concurrent(j = 2:jm-1)
+      dx(:,j) = 0.5 * (x(:,j+1) - x(:,j-1))
+    end do
+  end function diffc_2d_y
 
   pure function diffc(x) result(dx)
     ! Returns a centered difference of a 1-d array,
