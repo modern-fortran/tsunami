@@ -32,3 +32,10 @@ build/
 *.exe
 *.out
 *.app
+
+# Data files
+*.dat
+
+# Python
+__pycache__
+*.pyc

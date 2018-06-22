@@ -12,6 +12,7 @@ program tsunami
 
   use iso_fortran_env, only: output_unit
   use mod_diff, only: diffx => diffc_2d_x, diffy => diffc_2d_y
+  use mod_io, only: write_field
   use mod_kinds, only: ik, rk
   use mod_parallel, only: tile_indices, tile_neighbors
 
@@ -100,8 +101,10 @@ program tsunami
   time_loop: do n = 1, nm
 
     ! update halo for h
-    !h(ime)[left] = h(ils)
-    !h(ims)[right] = h(ile)
+    !h(ime,:)[left] = h(ils,:)
+    !h(ims,:)[right] = h(ile,:)
+    !h(:,jme)[left] = h(:,jls)
+    !h(:,jms)[right] = h(:,jle)
     !sync all
 
     ! compute u at next time step
@@ -113,11 +116,13 @@ program tsunami
            + v * diffy(v) / dy&
            + g * diffy(h) / dy) * dt
 
-    !sync all
+    sync all
 
     ! update halo for u
-    !u(ime)[left] = u(ils)
-    !u(ims)[right] = u(ile)
+    !u(ime,:)[left] = u(ils,:)
+    !u(ims,:)[right] = u(ile,:)
+    !v(:,jme)[left] = v(:,jls)
+    !v(:,jms)[right] = v(:,jle)
     !sync all
 
     ! compute h at next time step
@@ -126,11 +131,15 @@ program tsunami
 
     ! gather to image 1 and write current state to screen
     !gather(is:ie)[1] = h(ils:ile)
-    !sync all
+    sync all
     !if (this_image() == 1) write(unit=output_unit, fmt=*) n, gather
 
     !print *, n, h(50, 20), u(50, 20), v(50, 20)
-    print *, n, sum(h) / size(h), sum(sqrt(u**2 + v**2))
+    !print *, n, sum(h) / size(h), sum(sqrt(u**2 + v**2))
+
+    call write_field(h, 'h', n)
+    call write_field(u, 'u', n)
+    call write_field(v, 'v', n)
 
   end do time_loop
 
