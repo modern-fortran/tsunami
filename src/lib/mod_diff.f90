@@ -17,6 +17,7 @@ contains
     real(rk) :: dx(size(x, dim=1), size(x, dim=2))
     integer(ik) :: i, im
     im = size(x, dim=1)
+    dx = 0
     dx(1,:) = 0.5 * (x(2,:) - x(im,:))
     dx(im,:) = 0.5 * (x(1,:) - x(im-1,:))
     do concurrent(i = 2:im-1)
@@ -29,6 +30,7 @@ contains
     real(rk) :: dx(size(x, dim=1), size(x, dim=2))
     integer(ik) :: j, jm
     jm = size(x, dim=2)
+    dx = 0
     dx(:,1) = 0.5 * (x(:,2) - x(:,jm))
     dx(:,jm) = 0.5 * (x(:,1) - x(:,jm-1))
     do concurrent(j = 2:jm-1)

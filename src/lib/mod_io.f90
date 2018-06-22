@@ -17,7 +17,6 @@ contains
     write(timestr, '(i4.4)') time
     filename = 'tsunami_' // fieldname // '_' // trim(timestr) // '.dat'
     record_length = storage_size(field) / 8 * size(field)
-    write(*,*) trim(filename), record_length, storage_size(field), size(field)
     open(newunit=fileunit, file=filename, access='direct', recl=record_length)
     write(unit=fileunit, rec=1) field
     close(fileunit)

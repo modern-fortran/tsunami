@@ -83,14 +83,13 @@ program tsunami
   allocate(gather(im, jm)[*])
 
   ! initialize a gaussian blob centered at i = 25
-  do j = js - 1, je + 1
-    do i = is - 1, ie + 1
-      h(i-is+1, j-js+1) = exp(-decay * ((i - ipos)**2 + (j - jpos)**2))
-    end do
+  do concurrent(i = is-1:ie+1, j = js-1:je+1)
+    h(i-is+1, j-js+1) = exp(-decay * ((i - ipos)**2 + (j - jpos)**2))
   end do
 
   ! set initial velocity and mean water depth
   u = 0
+  v = 0
   hmean = 10
 
   ! gather to image 1 and write current state to screen
@@ -121,6 +120,12 @@ program tsunami
     ! update halo for u
     !u(ime,:)[left] = u(ils,:)
     !u(ims,:)[right] = u(ile,:)
+    !u(:,jme)[left] = u(:,jls)
+    !u(:,jms)[right] = u(:,jle)
+
+    ! update halo for v
+    !v(ime,:)[left] = v(ils,:)
+    !v(ims,:)[right] = v(ile,:)
     !v(:,jme)[left] = v(:,jls)
     !v(:,jms)[right] = v(:,jle)
     !sync all
@@ -135,11 +140,11 @@ program tsunami
     !if (this_image() == 1) write(unit=output_unit, fmt=*) n, gather
 
     !print *, n, h(50, 20), u(50, 20), v(50, 20)
-    !print *, n, sum(h) / size(h), sum(sqrt(u**2 + v**2))
+    print *, n, sum(h) / size(h), sum(sqrt(u**2 + v**2))
 
     call write_field(h, 'h', n)
-    call write_field(u, 'u', n)
-    call write_field(v, 'v', n)
+    !call write_field(u, 'u', n)
+    !call write_field(v, 'v', n)
 
   end do time_loop
 
