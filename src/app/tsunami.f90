@@ -2,15 +2,16 @@ program tsunami
 
   ! Tsunami simulator
   !
-  ! Solves the non-linear 1-d shallow water equation:
+  ! Solves the non-linear 2-d shallow water equation system:
   !
-  !     du/dt + u du/dx + g dh/dx = 0
-  !
-  !     dh/dt + d(hu)/dx = 0
+  !     du/dt + u du/dx + v du/dy + g dh/dx = 0
+  !     dv/dt + u dv/dx + v dv/dy + g dh/dy = 0
+  !     dh/dt + d(hu)/dx + d(hv)/dy = 0
   !
   ! This version is parallelized.
 
   use iso_fortran_env, only: output_unit
+  use mod_diagnostics, only: ke, mean
   use mod_diff, only: diffx => diffc_2d_x, diffy => diffc_2d_y
   use mod_io, only: write_field
   use mod_kinds, only: ik, rk
@@ -34,7 +35,7 @@ program tsunami
   real(rk), allocatable :: gather(:,:)[:]
   real(rk), allocatable :: hmean(:,:)
 
-  integer(ik), parameter :: ipos = 25, jpos = 25
+  integer(ik), parameter :: ipos = 51, jpos = 51
   real(rk), parameter :: decay = 0.02
 
   integer(ik), dimension(2) :: indices, neighbors
@@ -107,8 +108,8 @@ program tsunami
     !sync all
 
     ! compute u at next time step
-    u = u - (u * diffx(u) / dx& 
-           + v * diffy(u) / dy& 
+    u = u - (u * diffx(u) / dx&
+           + v * diffy(u) / dy&
            + g * diffx(h) / dx) * dt
 
     v = v - (u * diffx(v) / dx&
@@ -140,7 +141,7 @@ program tsunami
     !if (this_image() == 1) write(unit=output_unit, fmt=*) n, gather
 
     !print *, n, h(50, 20), u(50, 20), v(50, 20)
-    print *, n, sum(h) / size(h), sum(sqrt(u**2 + v**2))
+    print *, n, mean(h), mean(ke(u, v))
 
     call write_field(h, 'h', n)
     !call write_field(u, 'u', n)
