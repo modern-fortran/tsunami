@@ -15,7 +15,7 @@ program tsunami
   use mod_diff, only: diffx => diffc_2d_x, diffy => diffc_2d_y
   use mod_io, only: write_field
   use mod_kinds, only: ik, rk
-  use mod_parallel, only: tile_indices, tile_neighbors
+  use mod_parallel, only: num_tiles, tile_indices, tile_neighbors
 
   implicit none
 
@@ -23,7 +23,7 @@ program tsunami
 
   integer(ik), parameter :: im = 100 ! grid size in x
   integer(ik), parameter :: jm = 100 ! grid size in y
-  integer(ik), parameter :: nm = 5000 ! number of time steps
+  integer(ik), parameter :: nm = 1000 ! number of time steps
 
   real(rk), parameter :: dt = 0.02 ! time step [s]
   real(rk), parameter :: dx = 1 ! grid spacing [m]
@@ -51,17 +51,28 @@ program tsunami
 
   integer(ik) :: tile_size
 
+  integer(ik) :: indices_x(2), indices_y(2), tiles(2)
+  integer(ik) :: itile, jtile
+
   if (mod(im, num_images()) > 0) then
     error stop 'Error: im must be divisible by number of images'
   end if
 
-  neighbors = tile_neighbors()
-  left = neighbors(1)
-  right = neighbors(2)
+  !neighbors = tile_neighbors()
+  !left = neighbors(1)
+  !right = neighbors(2)
 
-  indices = tile_indices(im)
+  indices = tile_indices(im, this_image(), num_images())
   is = indices(1)
   ie = indices(2)
+
+  ! tile layout in 2-d
+  tiles = num_tiles(num_images())
+  jtile = (this_image() - 1) / tiles(1) + 1
+  itile = this_image() - (jtile - 1) * tiles(1)
+
+  indices_x = tile_indices(im, itile, tiles(1))
+  indices_y = tile_indices(jm, jtile, tiles(2))
 
   tile_size = im / num_images()
   ils = 1
@@ -116,7 +127,7 @@ program tsunami
            + v * diffy(v) / dy&
            + g * diffy(h) / dy) * dt
 
-    sync all
+    !sync all
 
     ! update halo for u
     !u(ime,:)[left] = u(ils,:)
@@ -137,15 +148,15 @@ program tsunami
 
     ! gather to image 1 and write current state to screen
     !gather(is:ie)[1] = h(ils:ile)
-    sync all
+    !sync all
     !if (this_image() == 1) write(unit=output_unit, fmt=*) n, gather
 
     !print *, n, h(50, 20), u(50, 20), v(50, 20)
     print *, n, mean(h), mean(ke(u, v))
 
     call write_field(h, 'h', n)
-    !call write_field(u, 'u', n)
-    !call write_field(v, 'v', n)
+    call write_field(u, 'u', n)
+    call write_field(v, 'v', n)
 
   end do time_loop
 

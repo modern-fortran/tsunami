@@ -78,15 +78,11 @@ contains
     real(rk), intent(in) :: x(:)
     real(rk) :: dx(size(x))
     integer(ik) :: i, idm
-
     idm = size(x)
-
     dx(1) = x(1) - x(idm)
-
     do concurrent(i = 2:idm)
       dx(2:idm) = x(2:idm) - x(1:idm-1)
     end do
-
   end function diffu
 
 end module mod_diff
