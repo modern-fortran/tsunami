@@ -11,6 +11,8 @@ program tsunami
   ! This version is parallelized.
 
   use iso_fortran_env, only: output_unit
+
+  use mod_boundary, only: reflective_boundary
   use mod_diagnostics, only: ke, mean
   use mod_diff, only: diffx => diffc_2d_x, diffy => diffc_2d_y
   use mod_io, only: write_field
@@ -145,6 +147,8 @@ program tsunami
     ! compute h at next time step
     h = h - diffx(u * (hmean + h)) / dx * dt&
           - diffy(v * (hmean + h)) / dy * dt
+
+    call reflective_boundary(u, v, h)
 
     ! gather to image 1 and write current state to screen
     !gather(is:ie)[1] = h(ils:ile)
