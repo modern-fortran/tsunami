@@ -8,7 +8,7 @@ module mod_parallel
   implicit none
 
   private
-  public :: num_tiles, tile_indices, tile_neighbors
+  public :: num_tiles, tile_indices, tile_neighbors_1d, tile_neighbors_2d
 
 contains
 
@@ -24,7 +24,7 @@ contains
   end function denominators
 
   pure function num_tiles(n)
-    ! Returns the ideal number of tiles in 2 dimensions
+    ! Returns the optimal number of tiles in 2 dimensions
     ! given total number of tiles n.
     integer(ik), intent(in) :: n
     integer(ik) :: num_tiles(2)
@@ -83,14 +83,11 @@ contains
 
   end function tile_indices
 
-  pure function tile_neighbors()
-
+  pure function tile_neighbors_1d() result(neighbors)
     ! Returns the image indices corresponding
     ! to left and right neighbor tiles.
-
-    integer(ik) :: tile_neighbors(2)
+    integer(ik) :: neighbors(2)
     integer(ik) :: left, right
-
     if (num_images() > 1) then
       left = this_image() - 1
       right = this_image() + 1
@@ -103,10 +100,43 @@ contains
       left = 1
       right = 1
     end if
+    !tile_neighbors(1) = left
+    !tile_neighbors(2) = right
+    neighbors = [left, right]
+  end function tile_neighbors_1d
 
-    tile_neighbors(1) = left
-    tile_neighbors(2) = right
+  pure function tile_neighbors_2d(periodic) result(neighbors)
+    ! Returns the neighbor image indices given
+    logical, intent(in) :: periodic
+    integer(ik) :: neighbors(4)
+    integer(ik) :: tiles(2), itile, jtile
+    integer(ik) :: left, right, down, up
 
-  end function tile_neighbors
+    tiles = num_tiles(num_images())
+    jtile = (this_image() - 1) / tiles(1) + 1
+    itile = this_image() - (jtile - 1) * tiles(1)
+
+    left = itile - 1
+    right = itile + 1
+    down = jtile - 1
+    up = jtile + 1
+
+    if (periodic) then
+      ! set neighbor to wrap around the edge
+      if (left < 1) left = tiles(1)
+      if (right > tiles(1)) right = 1
+      if (down < 1) down = tiles(2)
+      if (up > tiles(2)) up = 1
+    else
+      ! set neighbor to 0 -- no neighbor
+      if (left < 1) left = 0
+      if (right > tiles(1)) right = 0
+      if (down < 1) down = 0
+      if (up > tiles(2)) up = 0
+    end if
+
+    neighbors = [left, right, down, up]
+
+  end function tile_neighbors_2d
 
 end module mod_parallel
