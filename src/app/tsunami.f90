@@ -17,7 +17,7 @@ program tsunami
   use mod_diff, only: diffx => diffc_2d_x, diffy => diffc_2d_y
   use mod_io, only: write_field
   use mod_kinds, only: ik, rk
-  use mod_parallel, only: num_tiles, tile_indices, tile_neighbors_2d, update_halo
+  use mod_parallel, only: num_tiles, tile_indices, tile_neighbors_2d, update_halo, allocate_coarray
 
   implicit none
 
@@ -39,7 +39,7 @@ program tsunami
   real(rk), allocatable :: gather(:,:)
   real(rk), allocatable :: hmean(:,:)
 
-  real(rk), allocatable :: halo(:)[:]
+  !real(rk), allocatable :: halo(:)[:]
 
   integer(ik), parameter :: ipos = 51, jpos = 51
   real(rk), parameter :: decay = 0.02
@@ -109,20 +109,23 @@ program tsunami
 
   ! test halo exchange
   u = this_image()
-  if (this_image() == 5) print *, 'before halo', u(ie+1,js:je)
-  call update_halo(u)
-  if (this_image() == 5)  print *, 'after halo', u(ie+1,js:je)
-  stop
+  !if (this_image() == 5) print *, 'before halo', u(ie+1,js:je)
+  !call update_halo(u)
+  !if (this_image() == 5)  print *, 'after halo', u(ie+1,js:je)
+  !stop
 
   !allocate(halo(je-js+1)[*])
-  !if (this_image() == 2) halo(:)[1] = u(1,js:je)
+  !if (this_image() == 1) halo(:)[2] = u(ie,js:je)
+  !if (this_image() == 2) halo(:)[1] = u(is,js:je)
   !if (any([1, 2] == this_image())) sync images([1, 2])
-  !if (this_image() == 1) then
-!    u(ie+1,js:je) = halo
-!    print *, 'after halo', u(ie+1,js:je)
-!  end if
+  !if (this_image() == 1) u(ie+1,js:je) = halo
+  !if (this_image() == 2) u(is-1,js:je) = halo
+  !if (this_image() == 1) print *, 'image 1 after halo', u(ie+1,js:je)
+  !if (this_image() == 2) print *, 'image 2 after halo', u(is-1,js:je)
 
-!  stop
+  call allocate_coarray()
+
+  stop
 
   ! gather to image 1 and write current state to screen
   !gather(is:ie, js:je)[1] = h(ils:ile, jls:jle)

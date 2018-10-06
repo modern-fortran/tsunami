@@ -8,7 +8,7 @@ module mod_parallel
   implicit none
 
   private
-  public :: num_tiles, tile_indices, tile_neighbors_1d, tile_neighbors_2d, update_halo
+  public :: num_tiles, tile_indices, tile_neighbors_1d, tile_neighbors_2d, update_halo, allocate_coarray
 
 contains
 
@@ -190,5 +190,12 @@ contains
     deallocate(halo)
 
   end subroutine update_halo
+
+  subroutine allocate_coarray()
+    real(rk), allocatable :: halo(:,:)[:]
+    allocate(halo(1000, 4)[*])
+    print *, 'allocated halo array'
+    deallocate(halo)
+  end subroutine allocate_coarray
 
 end module mod_parallel
