@@ -8,7 +8,9 @@ module mod_parallel
   implicit none
 
   private
-  public :: num_tiles, tile_indices, tile_neighbors_1d, tile_neighbors_2d, update_halo, allocate_coarray
+  public :: num_tiles, tile_indices, tile_neighbors_1d, &
+            tile_neighbors_2d, update_halo, allocate_coarray, &
+            tile_index_2d_from_1d, tile_index_1d_from_2d
 
 contains
 
@@ -102,25 +104,25 @@ contains
   end function tile_neighbors_1d
 
 
-  pure function tile_index_2d_from_1d(i) result(ij)
+  pure function tile_index_2d_from_1d(n) result(ij)
     ! Given tile index in a 1-d layout, returns the 
     ! corresponding tile indices in a 2-d layout.
-    integer(ik), intent(in) :: i
-    integer(ik) :: ij(2), ii, jj, tiles(2)
+    integer(ik), intent(in) :: n
+    integer(ik) :: ij(2), i, j, tiles(2)
     tiles = num_tiles(num_images())
-    jj = (i - 1) / tiles(1) + 1
-    ii = i - (jj - 1) * tiles(1)
-    ij = [ii, jj]
+    j = (n - 1) / tiles(1) + 1
+    i = n - (j - 1) * tiles(1)
+    ij = [i, j]
   end function tile_index_2d_from_1d
     
     
-  pure function tile_index_1d_from_2d(ii, jj) result(i)
+  pure function tile_index_1d_from_2d(i, j) result(n)
     ! Given tile indices in a 2-d layout, returns the 
     ! corresponding tile index in a 1-d layout.
-    integer(ik), intent(in) :: ii, jj
-    integer(ik) :: i, tiles(2)
+    integer(ik), intent(in) :: i, j
+    integer(ik) :: n, tiles(2)
     tiles = num_tiles(num_images())
-    i = (jj - 1) * tiles(1) + 2
+    n = (j - 1) * tiles(1) + i
   end function tile_index_1d_from_2d
 
 

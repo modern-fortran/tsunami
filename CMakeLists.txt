@@ -60,7 +60,9 @@ endif()
 
 add_library(tsunami src/lib/mod_boundary.f90 src/lib/mod_diagnostics.f90 src/lib/mod_diff.f90 src/lib/mod_io.f90 src/lib/mod_kinds.f90 src/lib/mod_parallel.f90)
 add_executable(app src/app/tsunami.f90)
+add_executable(test_tiling src/app/test_tiling.f90)
 target_link_libraries(app tsunami)
+target_link_libraries(test_tiling tsunami)
 
 enable_testing()
 add_test(tsunami bin/app)
