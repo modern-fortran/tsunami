@@ -8,7 +8,7 @@ module mod_parallel
   implicit none
 
   private
-  public :: num_tiles, tile_indices, tile_neighbors_1d, tile_neighbors_2d
+  public :: num_tiles, tile_indices, tile_neighbors_1d, tile_neighbors_2d, update_halo
 
 contains
 
@@ -60,10 +60,8 @@ contains
   end function num_tiles
 
   pure function tile_indices(dims, i, n)
-
     ! Given input global array size, return start and end index
     ! of a parallel 1-d tile that correspond to this image.
-
     integer(ik), intent(in) :: dims, i, n
     integer(ik) :: tile_indices(2)
     integer(ik) :: offset, tile_size
@@ -100,8 +98,6 @@ contains
       left = 1
       right = 1
     end if
-    !tile_neighbors(1) = left
-    !tile_neighbors(2) = right
     neighbors = [left, right]
   end function tile_neighbors_1d
 
@@ -138,5 +134,61 @@ contains
     neighbors = [left, right, down, up]
 
   end function tile_neighbors_2d
+
+  subroutine update_halo(a)
+    real(rk), allocatable, intent(in out) :: a(:,:)
+    real(rk), allocatable :: halo(:,:)[:]
+    integer(ik) :: ix(2), iy(2), tiles(2)
+    integer(ik) :: itile, jtile, is, ie, js, je, im, jm
+    integer(ik) :: neighbors(4)
+    integer(ik) :: stat
+    character(len=100) :: errmsg
+
+    if (.not. allocated(a)) then
+      stop 'Error in update_halo: input array not allocated.'
+    end if
+
+    im = size(a, dim=1)
+    jm = size(a, dim=2)
+    print *, 'got to here 1'
+    allocate(halo(100, 4)[*])
+    !if (.not. allocated(halo)) allocate(halo(100, 4)[*], stat=stat, errmsg=errmsg)
+    print *, 'got to here 2'
+
+    print *, 'update_halo, im, jm:', im, jm
+
+    ! tile layout in 2-d
+    tiles = num_tiles(num_images())
+    jtile = (this_image() - 1) / tiles(1) + 1
+    itile = this_image() - (jtile - 1) * tiles(1)
+
+    neighbors = tile_neighbors_2d(periodic=.true.)
+    print *, 'update_halo, neighbors:', neighbors
+
+    ix = tile_indices(im, itile, tiles(1)) ! start and end index in x
+    iy = tile_indices(jm, jtile, tiles(2)) ! start and end index in y
+
+    is = ix(1)
+    ie = ix(2)
+    js = iy(1)
+    je = iy(2)
+
+    ! send to neighbors
+    halo(1:je-js+1,1)[neighbors(1)] = a(is,js:je) ! send left
+    halo(1:je-js+1,2)[neighbors(2)] = a(ie,js:je) ! send right
+    halo(1:ie-is+1,3)[neighbors(3)] = a(is:ie,js) ! send down
+    halo(1:ie-is+1,4)[neighbors(4)] = a(is:ie,je) ! send up
+
+    sync images([this_image(), neighbors])
+
+    ! copy from halo buffer into array
+    a(is-1,js:je) = halo(1:je-js+1,2) ! from left
+    a(ie+1,js:je) = halo(1:je-js+1,1) ! from right
+    a(is:ie,js-1) = halo(1:ie-is+1,4) ! from down
+    a(is:ie,je+1) = halo(1:ie-is+1,3) ! from up
+
+    deallocate(halo)
+
+  end subroutine update_halo
 
 end module mod_parallel

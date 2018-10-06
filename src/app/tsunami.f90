@@ -17,7 +17,7 @@ program tsunami
   use mod_diff, only: diffx => diffc_2d_x, diffy => diffc_2d_y
   use mod_io, only: write_field
   use mod_kinds, only: ik, rk
-  use mod_parallel, only: num_tiles, tile_indices, tile_neighbors_2d
+  use mod_parallel, only: num_tiles, tile_indices, tile_neighbors_2d, update_halo
 
   implicit none
 
@@ -33,11 +33,13 @@ program tsunami
 
   real(rk), parameter :: g = 9.8 ! gravitational acceleration [m/s]
 
-  real(rk), allocatable :: h(:,:)[:], u(:,:)[:], v(:,:)[:]
-  !real(rk), allocatable :: h(:,:), u(:,:), v(:,:)
-  real(rk), allocatable :: gather(:,:)[:]
-  !real(rk), allocatable :: gather(:,:)
+  !real(rk), allocatable :: h(:,:)[:], u(:,:)[:], v(:,:)[:]
+  real(rk), allocatable :: h(:,:), u(:,:), v(:,:)
+  !real(rk), allocatable :: gather(:,:)[:]
+  real(rk), allocatable :: gather(:,:)
   real(rk), allocatable :: hmean(:,:)
+
+  real(rk), allocatable :: halo(:)[:]
 
   integer(ik), parameter :: ipos = 51, jpos = 51
   real(rk), parameter :: decay = 0.02
@@ -75,39 +77,25 @@ program tsunami
 
   if (this_image() == 1) print *, 'Using', tiles(1), 'by', tiles(2), 'parallel tiles'
 
-  sync all
-  !print *, 'Image', this_image(), 'has tile position', itile, jtile
-  sync all
-
   print *, 'Tile neighbors:', itile, jtile, tile_neighbors_2d(periodic=.true.)
   sync all
-  stop
 
-  ix = tile_indices(im, itile, tiles(1))
-  iy = tile_indices(jm, jtile, tiles(2))
+  ix = tile_indices(im, itile, tiles(1)) ! start and end index in x
+  iy = tile_indices(jm, jtile, tiles(2)) ! start and end index in y
+
+  is = ix(1)
+  ie = ix(2)
+  js = iy(1)
+  je = iy(2)
 
   print *, 'Image', this_image(), 'ix, iy', ix, iy
-  stop
 
-  tile_size = im / num_images()
-  ils = 1
-  ile = tile_size
-  ims = ils - 1
-  ime = ile + 1
+  allocate(h(ix(1)-1:ix(2)+1, iy(1)-1:iy(2)+1))
+  allocate(u(ix(1)-1:ix(2)+1, iy(1)-1:iy(2)+1))
+  allocate(v(ix(1)-1:ix(2)+1, iy(1)-1:iy(2)+1))
+  allocate(hmean(ix(1)-1:ix(2)+1, iy(1)-1:iy(2)+1))
 
-  js = is
-  je = ie
-  jms = ims
-  jme = ime
-  jls = ils
-  jle = ile
-
-  allocate(h(ims:ime, jms:jme)[*])
-  allocate(u(ims:ime, jms:jme)[*])
-  allocate(v(ims:ime, jms:jme)[*])
-  allocate(hmean(ims:ime, jms:jme))
-
-  allocate(gather(im, jm)[*])
+  allocate(gather(im, jm))
 
   ! initialize a gaussian blob centered at i = 25
   do concurrent(i = is-1:ie+1, j = js-1:je+1)
@@ -118,6 +106,23 @@ program tsunami
   u = 0
   v = 0
   hmean = 10
+
+  ! test halo exchange
+  u = this_image()
+  if (this_image() == 5) print *, 'before halo', u(ie+1,js:je)
+  call update_halo(u)
+  if (this_image() == 5)  print *, 'after halo', u(ie+1,js:je)
+  stop
+
+  !allocate(halo(je-js+1)[*])
+  !if (this_image() == 2) halo(:)[1] = u(1,js:je)
+  !if (any([1, 2] == this_image())) sync images([1, 2])
+  !if (this_image() == 1) then
+!    u(ie+1,js:je) = halo
+!    print *, 'after halo', u(ie+1,js:je)
+!  end if
+
+!  stop
 
   ! gather to image 1 and write current state to screen
   !gather(is:ie, js:je)[1] = h(ils:ile, jls:jle)
