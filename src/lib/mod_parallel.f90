@@ -101,28 +101,53 @@ contains
     neighbors = [left, right]
   end function tile_neighbors_1d
 
+
+  pure function tile_index_2d_from_1d(i) result(ij)
+    ! Given tile index in a 1-d layout, returns the 
+    ! corresponding tile indices in a 2-d layout.
+    integer(ik), intent(in) :: i
+    integer(ik) :: ij(2), ii, jj, tiles(2)
+    tiles = num_tiles(num_images())
+    jj = (i - 1) / tiles(1) + 1
+    ii = i - (jj - 1) * tiles(1)
+    ij = [ii, jj]
+  end function tile_index_2d_from_1d
+    
+    
+  pure function tile_index_1d_from_2d(ii, jj) result(i)
+    ! Given tile indices in a 2-d layout, returns the 
+    ! corresponding tile index in a 1-d layout.
+    integer(ik), intent(in) :: ii, jj
+    integer(ik) :: i, tiles(2)
+    tiles = num_tiles(num_images())
+    i = (jj - 1) * tiles(1) + 2
+  end function tile_index_1d_from_2d
+
+
   pure function tile_neighbors_2d(periodic) result(neighbors)
     ! Returns the neighbor image indices given
     logical, intent(in) :: periodic
     integer(ik) :: neighbors(4)
-    integer(ik) :: tiles(2), itile, jtile
+    integer(ik) :: tiles(2), tiles_ij(2), itile, jtile
     integer(ik) :: left, right, down, up
+    integer(ik) :: ij_left(2), ij_right(2), ij_down(2), ij_up(2)
 
     tiles = num_tiles(num_images())
-    jtile = (this_image() - 1) / tiles(1) + 1
-    itile = this_image() - (jtile - 1) * tiles(1)
+    tiles_ij = tile_index_2d_from_1d(this_image())
+    itile = tiles_ij(1)
+    jtile = tiles_ij(2)
 
-    left = itile - 1
-    right = itile + 1
-    down = jtile - 1
-    up = jtile + 1
+    ij_left = [itile - 1, jtile]
+    ij_right = [itile + 1, jtile]
+    ij_down = [itile, jtile - 1]
+    ij_up = [itile, jtile + 1]
 
     if (periodic) then
       ! set neighbor to wrap around the edge
-      if (left < 1) left = tiles(1)
-      if (right > tiles(1)) right = 1
-      if (down < 1) down = tiles(2)
-      if (up > tiles(2)) up = 1
+      if (ij_left(1) < 1) ij_left(1) = tiles(1)
+      if (ij_right(1) > tiles(1)) ij_right(1) = 1
+      if (ij_down(2) < 1) ij_down(2) = tiles(2)
+      if (ij_up(2) > tiles(2)) ij_up(2) = 1
     else
       ! set neighbor to 0 -- no neighbor
       if (left < 1) left = 0
@@ -130,6 +155,11 @@ contains
       if (down < 1) down = 0
       if (up > tiles(2)) up = 0
     end if
+
+    left = tile_index_1d_from_2d(ij_left(1), ij_left(2))
+    right = tile_index_1d_from_2d(ij_right(1), ij_right(2))
+    down = tile_index_1d_from_2d(ij_down(1), ij_down(2))
+    up = tile_index_1d_from_2d(ij_up(1), ij_up(2))
 
     neighbors = [left, right, down, up]
 
@@ -150,12 +180,8 @@ contains
 
     im = size(a, dim=1)
     jm = size(a, dim=2)
-    print *, 'got to here 1'
     allocate(halo(100, 4)[*])
     !if (.not. allocated(halo)) allocate(halo(100, 4)[*], stat=stat, errmsg=errmsg)
-    print *, 'got to here 2'
-
-    print *, 'update_halo, im, jm:', im, jm
 
     ! tile layout in 2-d
     tiles = num_tiles(num_images())
@@ -163,7 +189,7 @@ contains
     itile = this_image() - (jtile - 1) * tiles(1)
 
     neighbors = tile_neighbors_2d(periodic=.true.)
-    print *, 'update_halo, neighbors:', neighbors
+    print *, 'update_halo, this_image, neighbors:', this_image(), neighbors
 
     ix = tile_indices(im, itile, tiles(1)) ! start and end index in x
     iy = tile_indices(jm, jtile, tiles(2)) ! start and end index in y

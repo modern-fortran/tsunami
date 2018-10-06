@@ -62,14 +62,6 @@ program tsunami
 
   if (this_image() == 1) print *, 'Tsunami started'
 
-  !neighbors = tile_neighbors()
-  !left = neighbors(1)
-  !right = neighbors(2)
-
-  !indices = tile_indices(im, this_image(), num_images())
-  !is = indices(1)
-  !ie = indices(2)
-
   ! tile layout in 2-d
   tiles = num_tiles(num_images())
   jtile = (this_image() - 1) / tiles(1) + 1
@@ -79,6 +71,7 @@ program tsunami
 
   print *, 'Tile neighbors:', itile, jtile, tile_neighbors_2d(periodic=.true.)
   sync all
+  stop
 
   ix = tile_indices(im, itile, tiles(1)) ! start and end index in x
   iy = tile_indices(jm, jtile, tiles(2)) ! start and end index in y
@@ -98,9 +91,14 @@ program tsunami
   allocate(gather(im, jm))
 
   ! initialize a gaussian blob centered at i = 25
-  do concurrent(i = is-1:ie+1, j = js-1:je+1)
-    h(i-is+1, j-js+1) = exp(-decay * ((i - ipos)**2 + (j - jpos)**2))
-  end do
+  !do concurrent(i = is-1:ie+1, j = js-1:je+1)
+  !  h(i-is+1, j-js+1) = exp(-decay * ((i - ipos)**2 + (j - jpos)**2))
+  !end do
+
+  !print *, this_image(), 'before allocate_coarray'
+  !call allocate_coarray()
+  !print *, this_image(), 'after allocate_coarray'
+  !stop
 
   ! set initial velocity and mean water depth
   u = 0
@@ -109,10 +107,10 @@ program tsunami
 
   ! test halo exchange
   u = this_image()
-  !if (this_image() == 5) print *, 'before halo', u(ie+1,js:je)
-  !call update_halo(u)
-  !if (this_image() == 5)  print *, 'after halo', u(ie+1,js:je)
-  !stop
+  if (this_image() == 1) print *, 'before halo', u(ie+1,js:je)
+  call update_halo(u)
+  if (this_image() == 1)  print *, 'after halo', u(ie+1,js:je)
+  stop
 
   !allocate(halo(je-js+1)[*])
   !if (this_image() == 1) halo(:)[2] = u(ie,js:je)
@@ -123,9 +121,6 @@ program tsunami
   !if (this_image() == 1) print *, 'image 1 after halo', u(ie+1,js:je)
   !if (this_image() == 2) print *, 'image 2 after halo', u(is-1,js:je)
 
-  call allocate_coarray()
-
-  stop
 
   ! gather to image 1 and write current state to screen
   !gather(is:ie, js:je)[1] = h(ils:ile, jls:jle)
