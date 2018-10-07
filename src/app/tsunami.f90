@@ -44,9 +44,6 @@ program tsunami
   integer(ik), parameter :: ipos = 51, jpos = 51
   real(rk), parameter :: decay = 0.02
 
-  integer(ik), dimension(2) :: indices, neighbors
-  integer(ik) :: left, right
-
   integer(ik) :: is, ie ! global start and end indices
   integer(ik) :: ils, ile ! local start and end computational indices
   integer(ik) :: ims, ime ! local start and end memory indices
@@ -57,36 +54,23 @@ program tsunami
 
   integer(ik) :: tile_size
 
-  integer(ik) :: ix(2), iy(2), tiles(2)
-  integer(ik) :: itile, jtile
+  integer(ik) :: indices(4), neighbors(4)
 
   if (this_image() == 1) print *, 'Tsunami started'
 
-  ! tile layout in 2-d
-  tiles = num_tiles(num_images())
-  jtile = (this_image() - 1) / tiles(1) + 1
-  itile = this_image() - (jtile - 1) * tiles(1)
-
-  if (this_image() == 1) print *, 'Using', tiles(1), 'by', tiles(2), 'parallel tiles'
-
-  print *, 'Tile neighbors:', itile, jtile, tile_neighbors_2d(periodic=.true.)
+  print *, 'Tile neighbors:', this_image(), tile_neighbors_2d(periodic=.true.)
   sync all
-  stop
 
-  ix = tile_indices(im, itile, tiles(1)) ! start and end index in x
-  iy = tile_indices(jm, jtile, tiles(2)) ! start and end index in y
+  indices = tile_indices([im, jm])
+  is = indices(1)
+  ie = indices(2)
+  js = indices(3)
+  je = indices(4)
 
-  is = ix(1)
-  ie = ix(2)
-  js = iy(1)
-  je = iy(2)
-
-  print *, 'Image', this_image(), 'ix, iy', ix, iy
-
-  allocate(h(ix(1)-1:ix(2)+1, iy(1)-1:iy(2)+1))
-  allocate(u(ix(1)-1:ix(2)+1, iy(1)-1:iy(2)+1))
-  allocate(v(ix(1)-1:ix(2)+1, iy(1)-1:iy(2)+1))
-  allocate(hmean(ix(1)-1:ix(2)+1, iy(1)-1:iy(2)+1))
+  allocate(h(is-1:ie+1, js-1:je+1))
+  allocate(u(is-1:ie+1, js-1:je+1))
+  allocate(v(is-1:ie+1, js-1:je+1))
+  allocate(hmean(is-1:ie+1, js-1:je+1))
 
   allocate(gather(im, jm))
 
@@ -108,8 +92,13 @@ program tsunami
   ! test halo exchange
   u = this_image()
   if (this_image() == 1) print *, 'before halo', u(ie+1,js:je)
+  sync all
   call update_halo(u)
-  if (this_image() == 1)  print *, 'after halo', u(ie+1,js:je)
+  sync all
+    if (this_image() == 1) print *, 'west', u(is-1,js:je)
+    if (this_image() == 1) print *, 'east', u(ie+1,js:je)
+    if (this_image() == 1) print *, 'south', u(is:ie, js-1)
+    if (this_image() == 1) print *, 'north', u(is:ie, je+1)
   stop
 
   !allocate(halo(je-js+1)[*])

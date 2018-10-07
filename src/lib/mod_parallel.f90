@@ -12,6 +12,10 @@ module mod_parallel
             tile_neighbors_2d, update_halo, allocate_coarray, &
             tile_n2ij, tile_ij2n
 
+  interface tile_indices
+    module procedure :: tile_indices_1d, tile_indices_2d
+  end interface tile_indices
+
 contains
 
   pure function denominators(n)
@@ -70,27 +74,39 @@ contains
 
   end function num_tiles
 
-  pure function tile_indices(dims, i, n)
+  pure function tile_indices_1d(dims, i, n) result(indices)
     ! Given input global array size, return start and end index
     ! of a parallel 1-d tile that correspond to this image.
     integer(ik), intent(in) :: dims, i, n
-    integer(ik) :: tile_indices(2)
+    integer(ik) :: indices(2)
     integer(ik) :: offset, tile_size
 
     tile_size = dims / n
 
     ! start and end indices assuming equal tile sizes
-    tile_indices(1) = (i - 1) * tile_size + 1
-    tile_indices(2) = tile_indices(1) + tile_size - 1
+    indices(1) = (i - 1) * tile_size + 1
+    indices(2) = indices(1) + tile_size - 1
 
     ! if we have any remainder, distribute it to the tiles at the end
     offset = n - mod(dims, n)
     if (i > offset) then
-      tile_indices(1) = tile_indices(1) + i - offset - 1
-      tile_indices(2) = tile_indices(2) + i - offset
+      indices(1) = indices(1) + i - offset - 1
+      indices(2) = indices(2) + i - offset
     end if
 
-  end function tile_indices
+  end function tile_indices_1d
+
+
+  pure function tile_indices_2d(dims) result(indices)
+    integer(ik), intent(in) :: dims(2)
+    integer(ik) :: indices(4)
+    integer(ik) :: tiles(2), tiles_ij(2)
+    tiles = num_tiles(num_images())
+    tiles_ij = tile_n2ij(this_image())
+    indices(1:2) = tile_indices_1d(dims(1), tiles_ij(1), tiles(1))
+    indices(3:4) = tile_indices_1d(dims(2), tiles_ij(2), tiles(2))
+  end function tile_indices_2d
+
 
   pure function tile_neighbors_1d() result(neighbors)
     ! Returns the image indices corresponding
@@ -214,44 +230,46 @@ contains
   subroutine update_halo(a)
     real(rk), allocatable, intent(in out) :: a(:,:)
     real(rk), allocatable :: halo(:,:)[:]
-    integer(ik) :: ix(2), iy(2), tiles(2)
-    integer(ik) :: itile, jtile, is, ie, js, je, im, jm
-    integer(ik) :: neighbors(4)
-    integer(ik) :: stat
-    character(len=100) :: errmsg
+    integer(ik) :: tiles(2), neighbors(4), indices(4)
+    integer(ik) :: is, ie, js, je
 
     if (.not. allocated(a)) then
       stop 'Error in update_halo: input array not allocated.'
     end if
 
-    im = size(a, dim=1)
-    jm = size(a, dim=2)
-    allocate(halo(100, 4)[*])
-    !if (.not. allocated(halo)) allocate(halo(100, 4)[*], stat=stat, errmsg=errmsg)
+    if (.not. allocated(halo)) allocate(halo(100, 4)[*])
+    halo = -1
 
-    ! tile layout in 2-d
+    ! tile layout, neighbors, and indices
     tiles = num_tiles(num_images())
-    jtile = (this_image() - 1) / tiles(1) + 1
-    itile = this_image() - (jtile - 1) * tiles(1)
-
     neighbors = tile_neighbors_2d(periodic=.true.)
-    print *, 'update_halo, this_image, neighbors:', this_image(), neighbors
+    indices = tile_indices([size(a, dim=1), size(a, dim=2)])
 
-    ix = tile_indices(im, itile, tiles(1)) ! start and end index in x
-    iy = tile_indices(jm, jtile, tiles(2)) ! start and end index in y
-
-    is = ix(1)
-    ie = ix(2)
-    js = iy(1)
-    je = iy(2)
+    is = indices(1)
+    ie = indices(2)
+    js = indices(3)
+    je = indices(4)
 
     ! send to neighbors
+    !
+    !      +---+
+    !      | 4 |
+    !  +---+-^-+---+
+    !  | 1 <   > 2 |
+    !  +---+-v-+---+
+    !      | 3 | 
+    !      +---+   
+
+    if (this_image() == 2) print *, a(is,js:je)
+
     halo(1:je-js+1,1)[neighbors(1)] = a(is,js:je) ! send left
     halo(1:je-js+1,2)[neighbors(2)] = a(ie,js:je) ! send right
     halo(1:ie-is+1,3)[neighbors(3)] = a(is:ie,js) ! send down
     halo(1:ie-is+1,4)[neighbors(4)] = a(is:ie,je) ! send up
 
-    sync images([this_image(), neighbors])
+    sync all
+
+    if (this_image() == 1) print *, halo(1:je-js+1,1)
 
     ! copy from halo buffer into array
     a(is-1,js:je) = halo(1:je-js+1,2) ! from left
@@ -260,6 +278,10 @@ contains
     a(is:ie,je+1) = halo(1:ie-is+1,3) ! from up
 
     deallocate(halo)
+    if (this_image() == 1) print *, 'west', a(is-1,js:je)
+    if (this_image() == 1) print *, 'east', a(ie+1,js:je)
+    if (this_image() == 1) print *, 'south', a(is:ie, js-1)
+    if (this_image() == 1) print *, 'north', a(is:ie, je+1)
 
   end subroutine update_halo
 

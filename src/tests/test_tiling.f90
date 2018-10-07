@@ -37,4 +37,11 @@ program test_tiling
     sync all
   end do
 
+  if (this_image() == 1) print *, 'tile start and end indices'
+  sync all
+  do n = 1, num_images()
+    if (this_image() == n) print *, this_image(), tile_indices([100, 100])
+    sync all
+  end do
+
 end program test_tiling
