@@ -10,7 +10,7 @@ module mod_parallel
   private
   public :: num_tiles, tile_indices, tile_neighbors_1d, &
             tile_neighbors_2d, update_halo, allocate_coarray, &
-            tile_index_2d_from_1d, tile_index_1d_from_2d
+            tile_n2ij, tile_ij2n
 
 contains
 
@@ -28,6 +28,15 @@ contains
   pure function num_tiles(n)
     ! Returns the optimal number of tiles in 2 dimensions
     ! given total number of tiles n.
+    !
+    ! Examples:
+    !   * num_tiles(1) = [1, 1]
+    !   * num_tiles(2) = [2, 1]
+    !   * num_tiles(3) = [3, 1]
+    !   * num_tiles(4) = [2, 2]
+    !   * num_tiles(5) = [5, 1]
+    !   * num_tiles(6) = [3, 2]
+    !
     integer(ik), intent(in) :: n
     integer(ik) :: num_tiles(2)
     integer(ik), allocatable :: denoms(:)
@@ -104,30 +113,64 @@ contains
   end function tile_neighbors_1d
 
 
-  pure function tile_index_2d_from_1d(n) result(ij)
+  pure function tile_n2ij(n) result(ij)
     ! Given tile index in a 1-d layout, returns the 
     ! corresponding tile indices in a 2-d layout.
+    !
+    !    +---+---+---+
+    !  2 | 4 | 5 | 6 |
+    !    +---+---+---+
+    !  1 | 1 | 2 | 3 |
+    !  j +---+---+---+
+    !    i 1   2   3  
+    !           
+    ! Examples:
+    !   * tile_n2ij(2) = [2, 1]
+    !   * tile_n2ij(4) = [1, 2]
+    !   * tile_n2ij(6) = [3, 2]
+    !
     integer(ik), intent(in) :: n
     integer(ik) :: ij(2), i, j, tiles(2)
-    tiles = num_tiles(num_images())
-    j = (n - 1) / tiles(1) + 1
-    i = n - (j - 1) * tiles(1)
-    ij = [i, j]
-  end function tile_index_2d_from_1d
+    if (n == 0) then
+      ij = 0
+    else
+      tiles = num_tiles(num_images())
+      j = (n - 1) / tiles(1) + 1
+      i = n - (j - 1) * tiles(1)
+      ij = [i, j]
+    end if 
+  end function tile_n2ij
     
     
-  pure function tile_index_1d_from_2d(i, j) result(n)
+  pure function tile_ij2n(ij) result(n)
     ! Given tile indices in a 2-d layout, returns the 
-    ! corresponding tile index in a 1-d layout.
-    integer(ik), intent(in) :: i, j
+    ! corresponding tile index in a 1-d layout:
+    !
+    !    +---+---+---+
+    !  2 | 4 | 5 | 6 |
+    !    +---+---+---+
+    !  1 | 1 | 2 | 3 |
+    !  j +---+---+---+
+    !    i 1   2   3  
+    !           
+    ! Examples:
+    !   * tile_ij2n([2, 1]) = 2
+    !   * tile_ij2n([1, 2]) = 4
+    !   * tile_ij2n([3, 2]) = 6
+    !
+    integer(ik), intent(in) :: ij(2)
     integer(ik) :: n, tiles(2)
-    tiles = num_tiles(num_images())
-    n = (j - 1) * tiles(1) + i
-  end function tile_index_1d_from_2d
+    if (any(ij == 0)) then
+      n = 0
+    else
+      tiles = num_tiles(num_images())
+      n = (ij(2) - 1) * tiles(1) + ij(1)
+    end if 
+  end function tile_ij2n
 
 
   pure function tile_neighbors_2d(periodic) result(neighbors)
-    ! Returns the neighbor image indices given
+    ! Returns the neighbor image indices given.
     logical, intent(in) :: periodic
     integer(ik) :: neighbors(4)
     integer(ik) :: tiles(2), tiles_ij(2), itile, jtile
@@ -135,10 +178,11 @@ contains
     integer(ik) :: ij_left(2), ij_right(2), ij_down(2), ij_up(2)
 
     tiles = num_tiles(num_images())
-    tiles_ij = tile_index_2d_from_1d(this_image())
+    tiles_ij = tile_n2ij(this_image())
     itile = tiles_ij(1)
     jtile = tiles_ij(2)
 
+    ! i, j tile indices for each of the neighbors
     ij_left = [itile - 1, jtile]
     ij_right = [itile + 1, jtile]
     ij_down = [itile, jtile - 1]
@@ -152,16 +196,16 @@ contains
       if (ij_up(2) > tiles(2)) ij_up(2) = 1
     else
       ! set neighbor to 0 -- no neighbor
-      if (left < 1) left = 0
-      if (right > tiles(1)) right = 0
-      if (down < 1) down = 0
-      if (up > tiles(2)) up = 0
+      if (ij_left(1) < 1) ij_left = 0
+      if (ij_right(1) > tiles(1)) ij_right = 0
+      if (ij_down(2) < 1) ij_down = 0
+      if (ij_up(2) > tiles(2)) ij_up = 0
     end if
 
-    left = tile_index_1d_from_2d(ij_left(1), ij_left(2))
-    right = tile_index_1d_from_2d(ij_right(1), ij_right(2))
-    down = tile_index_1d_from_2d(ij_down(1), ij_down(2))
-    up = tile_index_1d_from_2d(ij_up(1), ij_up(2))
+    left = tile_ij2n(ij_left)
+    right = tile_ij2n(ij_right)
+    down = tile_ij2n(ij_down)
+    up = tile_ij2n(ij_up)
 
     neighbors = [left, right, down, up]
 
