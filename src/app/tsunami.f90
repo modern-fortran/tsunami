@@ -75,9 +75,9 @@ program tsunami
   allocate(gather(im, jm))
 
   ! initialize a gaussian blob centered at i = 25
-  !do concurrent(i = is-1:ie+1, j = js-1:je+1)
-  !  h(i-is+1, j-js+1) = exp(-decay * ((i - ipos)**2 + (j - jpos)**2))
-  !end do
+  do concurrent(i = is-1:ie+1, j = js-1:je+1)
+    h(i-is+1, j-js+1) = exp(-decay * ((i - ipos)**2 + (j - jpos)**2))
+  end do
 
   !print *, this_image(), 'before allocate_coarray'
   !call allocate_coarray()
@@ -88,28 +88,6 @@ program tsunami
   u = 0
   v = 0
   hmean = 10
-
-  ! test halo exchange
-  u = this_image()
-  if (this_image() == 1) print *, 'before halo', u(ie+1,js:je)
-  sync all
-  call update_halo(u)
-  sync all
-    if (this_image() == 1) print *, 'west', u(is-1,js:je)
-    if (this_image() == 1) print *, 'east', u(ie+1,js:je)
-    if (this_image() == 1) print *, 'south', u(is:ie, js-1)
-    if (this_image() == 1) print *, 'north', u(is:ie, je+1)
-  stop
-
-  !allocate(halo(je-js+1)[*])
-  !if (this_image() == 1) halo(:)[2] = u(ie,js:je)
-  !if (this_image() == 2) halo(:)[1] = u(is,js:je)
-  !if (any([1, 2] == this_image())) sync images([1, 2])
-  !if (this_image() == 1) u(ie+1,js:je) = halo
-  !if (this_image() == 2) u(is-1,js:je) = halo
-  !if (this_image() == 1) print *, 'image 1 after halo', u(ie+1,js:je)
-  !if (this_image() == 2) print *, 'image 2 after halo', u(is-1,js:je)
-
 
   ! gather to image 1 and write current state to screen
   !gather(is:ie, js:je)[1] = h(ils:ile, jls:jle)
@@ -124,6 +102,8 @@ program tsunami
     !h(:,jme)[left] = h(:,jls)
     !h(:,jms)[right] = h(:,jle)
     !sync all
+
+    call update_halo(h, indices)
 
     ! compute u at next time step
     u = u - (u * diffx(u) / dx&
@@ -148,12 +128,14 @@ program tsunami
     !v(:,jme)[left] = v(:,jls)
     !v(:,jms)[right] = v(:,jle)
     !sync all
+    call update_halo(u, indices)
+    call update_halo(v, indices)
 
     ! compute h at next time step
     h = h - diffx(u * (hmean + h)) / dx * dt&
           - diffy(v * (hmean + h)) / dy * dt
 
-    call reflective_boundary(u, v, h)
+    !call reflective_boundary(u, v, h)
 
     ! gather to image 1 and write current state to screen
     !gather(is:ie)[1] = h(ils:ile)
@@ -163,9 +145,9 @@ program tsunami
     !print *, n, h(50, 20), u(50, 20), v(50, 20)
     print *, n, mean(h), mean(ke(u, v))
 
-    call write_field(h, 'h', n)
-    call write_field(u, 'u', n)
-    call write_field(v, 'v', n)
+    !call write_field(h, 'h', n)
+    !call write_field(u, 'u', n)
+    !call write_field(v, 'v', n)
 
   end do time_loop
 

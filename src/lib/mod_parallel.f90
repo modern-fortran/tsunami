@@ -130,7 +130,7 @@ contains
 
 
   pure function tile_n2ij(n) result(ij)
-    ! Given tile index in a 1-d layout, returns the 
+    ! Given tile index in a 1-d layout, returns the
     ! corresponding tile indices in a 2-d layout.
     !
     !    +---+---+---+
@@ -138,8 +138,8 @@ contains
     !    +---+---+---+
     !  1 | 1 | 2 | 3 |
     !  j +---+---+---+
-    !    i 1   2   3  
-    !           
+    !    i 1   2   3
+    !
     ! Examples:
     !   * tile_n2ij(2) = [2, 1]
     !   * tile_n2ij(4) = [1, 2]
@@ -154,12 +154,12 @@ contains
       j = (n - 1) / tiles(1) + 1
       i = n - (j - 1) * tiles(1)
       ij = [i, j]
-    end if 
+    end if
   end function tile_n2ij
-    
-    
+
+
   pure function tile_ij2n(ij) result(n)
-    ! Given tile indices in a 2-d layout, returns the 
+    ! Given tile indices in a 2-d layout, returns the
     ! corresponding tile index in a 1-d layout:
     !
     !    +---+---+---+
@@ -167,8 +167,8 @@ contains
     !    +---+---+---+
     !  1 | 1 | 2 | 3 |
     !  j +---+---+---+
-    !    i 1   2   3  
-    !           
+    !    i 1   2   3
+    !
     ! Examples:
     !   * tile_ij2n([2, 1]) = 2
     !   * tile_ij2n([1, 2]) = 4
@@ -181,7 +181,7 @@ contains
     else
       tiles = num_tiles(num_images())
       n = (ij(2) - 1) * tiles(1) + ij(1)
-    end if 
+    end if
   end function tile_ij2n
 
 
@@ -227,49 +227,37 @@ contains
 
   end function tile_neighbors_2d
 
-  subroutine update_halo(a)
+  subroutine update_halo(a, indices)
     real(rk), allocatable, intent(in out) :: a(:,:)
+    integer(ik), intent(in) :: indices(4)
     real(rk), allocatable :: halo(:,:)[:]
-    integer(ik) :: tiles(2), neighbors(4), indices(4)
+    integer(ik) :: tiles(2), neighbors(4)
     integer(ik) :: is, ie, js, je
 
     if (.not. allocated(a)) then
       stop 'Error in update_halo: input array not allocated.'
     end if
 
+    !TODO don't hardwire the buffer size (100)
     if (.not. allocated(halo)) allocate(halo(100, 4)[*])
-    halo = -1
+    halo = 0
 
     ! tile layout, neighbors, and indices
     tiles = num_tiles(num_images())
     neighbors = tile_neighbors_2d(periodic=.true.)
-    indices = tile_indices([size(a, dim=1), size(a, dim=2)])
 
     is = indices(1)
     ie = indices(2)
     js = indices(3)
     je = indices(4)
 
-    ! send to neighbors
-    !
-    !      +---+
-    !      | 4 |
-    !  +---+-^-+---+
-    !  | 1 <   > 2 |
-    !  +---+-v-+---+
-    !      | 3 | 
-    !      +---+   
-
-    if (this_image() == 2) print *, a(is,js:je)
-
+    ! copy data into coarray buffer
     halo(1:je-js+1,1)[neighbors(1)] = a(is,js:je) ! send left
     halo(1:je-js+1,2)[neighbors(2)] = a(ie,js:je) ! send right
     halo(1:ie-is+1,3)[neighbors(3)] = a(is:ie,js) ! send down
     halo(1:ie-is+1,4)[neighbors(4)] = a(is:ie,je) ! send up
 
     sync all
-
-    if (this_image() == 1) print *, halo(1:je-js+1,1)
 
     ! copy from halo buffer into array
     a(is-1,js:je) = halo(1:je-js+1,2) ! from left
@@ -278,10 +266,6 @@ contains
     a(is:ie,je+1) = halo(1:ie-is+1,3) ! from up
 
     deallocate(halo)
-    if (this_image() == 1) print *, 'west', a(is-1,js:je)
-    if (this_image() == 1) print *, 'east', a(ie+1,js:je)
-    if (this_image() == 1) print *, 'south', a(is:ie, js-1)
-    if (this_image() == 1) print *, 'north', a(is:ie, je+1)
 
   end subroutine update_halo
 
