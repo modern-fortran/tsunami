@@ -233,14 +233,11 @@ contains
     real(rk), allocatable :: halo(:,:)[:]
     integer(ik) :: tiles(2), neighbors(4)
     integer(ik) :: is, ie, js, je
+    integer(ik) :: halo_size
 
     if (.not. allocated(a)) then
       stop 'Error in update_halo: input array not allocated.'
     end if
-
-    !TODO don't hardwire the buffer size (100)
-    if (.not. allocated(halo)) allocate(halo(100, 4)[*])
-    halo = 0
 
     ! tile layout, neighbors, and indices
     tiles = num_tiles(num_images())
@@ -250,6 +247,11 @@ contains
     ie = indices(2)
     js = indices(3)
     je = indices(4)
+
+    halo_size = max(ie-is+1, je-js+1)
+    call co_max(halo_size)
+    allocate(halo(halo_size, 4)[*])
+    halo = 0
 
     ! copy data into coarray buffer
     halo(1:je-js+1,1)[neighbors(1)] = a(is,js:je) ! send left
