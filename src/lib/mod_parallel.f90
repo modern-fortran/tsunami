@@ -9,8 +9,7 @@ module mod_parallel
 
   private
   public :: num_tiles, tile_indices, tile_neighbors_1d, &
-            tile_neighbors_2d, update_halo, allocate_coarray, &
-            tile_n2ij, tile_ij2n
+            tile_neighbors_2d, update_halo, tile_n2ij, tile_ij2n
 
   interface tile_indices
     module procedure :: tile_indices_1d, tile_indices_2d
@@ -250,8 +249,10 @@ contains
 
     halo_size = max(ie-is+1, je-js+1)
     call co_max(halo_size)
-    allocate(halo(halo_size, 4)[*])
+    if (.not. allocated(halo)) allocate(halo(halo_size, 4)[*])
     halo = 0
+
+    sync all
 
     ! copy data into coarray buffer
     halo(1:je-js+1,1)[neighbors(1)] = a(is,js:je) ! send left
@@ -270,12 +271,5 @@ contains
     deallocate(halo)
 
   end subroutine update_halo
-
-  subroutine allocate_coarray()
-    real(rk), allocatable :: halo(:,:)[:]
-    allocate(halo(1000, 4)[*])
-    print *, 'allocated halo array'
-    deallocate(halo)
-  end subroutine allocate_coarray
 
 end module mod_parallel

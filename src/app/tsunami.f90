@@ -66,6 +66,16 @@ program tsunami
   u = 0
   v = 0
   hmean = 10
+    
+  ! gather to image 1 and write water height to file
+  gather(is:ie, js:je)[1] = h(is:ie, js:je)
+  sync all
+  n = 0
+  if (this_image() == 1) then
+    !print *, n, gather(3 * im / 4, jm / 2)
+    print *, n, gather(1, 1)
+    !call write_field(gather, 'h', n)
+  end if
 
   time_loop: do n = 1, nm
 
@@ -79,21 +89,20 @@ program tsunami
     v = v - (u * diffx(v) / dx + v * diffy(v) / dy &
       + g * diffy(h) / dy) * dt
 
-    sync all
     call update_halo(u, indices)
     call update_halo(v, indices)
 
     ! compute h at next time step
     h = h - diffx(u * (hmean + h)) / dx * dt&
           - diffy(v * (hmean + h)) / dy * dt
-    sync all
 
     ! gather to image 1 and write water height to file
     gather(is:ie, js:je)[1] = h(is:ie, js:je)
     sync all
     if (this_image() == 1) then
-      print *, n, gather(3 * im / 4, jm / 2)
-      call write_field(gather, 'h', n)
+      !print *, n, gather(3 * im / 4, jm / 2)
+      print *, n, gather(1, 1)
+      !call write_field(gather, 'h', n)
     end if
 
   end do time_loop
