@@ -9,7 +9,7 @@ module mod_parallel
 
   private
   public :: num_tiles, tile_indices, tile_neighbors_1d, &
-            tile_neighbors_2d, update_halo, tile_n2ij, tile_ij2n
+            tile_neighbors_2d, sync_edges
 
   interface tile_indices
     module procedure :: tile_indices_1d, tile_indices_2d
@@ -97,6 +97,8 @@ contains
 
 
   pure function tile_indices_2d(dims) result(indices)
+    ! Given an input x- and y- dimensions of the total computational domain [im, jm].
+    ! returns an array of start and end indices in x- and y-, [is, ie, js, je].
     integer(ik), intent(in) :: dims(2)
     integer(ik) :: indices(4)
     integer(ik) :: tiles(2), tiles_ij(2)
@@ -226,7 +228,7 @@ contains
 
   end function tile_neighbors_2d
 
-  subroutine update_halo(a, indices)
+  subroutine sync_edges(a, indices)
     real(rk), allocatable, intent(in out) :: a(:,:)
     integer(ik), intent(in) :: indices(4)
     real(rk), allocatable :: halo(:,:)[:]
@@ -270,6 +272,6 @@ contains
 
     deallocate(halo)
 
-  end subroutine update_halo
+  end subroutine sync_edges
 
 end module mod_parallel

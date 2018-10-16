@@ -12,11 +12,11 @@ program tsunami
 
   use iso_fortran_env, only: output_unit
 
-  use mod_diagnostics, only: ke, mean
+  use mod_diagnostics, only: mean
   use mod_diff, only: diffx => diffc_2d_x, diffy => diffc_2d_y
   use mod_io, only: write_field
   use mod_kinds, only: ik, rk
-  use mod_parallel, only: tile_indices, update_halo
+  use mod_parallel, only: tile_indices, sync_edges
 
   implicit none
 
@@ -34,7 +34,7 @@ program tsunami
 
   real(rk), allocatable :: h(:,:), u(:,:), v(:,:)
   real(rk), allocatable :: gather(:,:)[:]
-  real(rk), allocatable :: hmean(:,:)
+  real(rk), allocatable :: hm(:,:)
 
   integer(ik), parameter :: ipos = 51, jpos = 51
   real(rk), parameter :: decay = 0.02
@@ -53,7 +53,7 @@ program tsunami
   allocate(h(is-1:ie+1, js-1:je+1))
   allocate(u(is-1:ie+1, js-1:je+1))
   allocate(v(is-1:ie+1, js-1:je+1))
-  allocate(hmean(is-1:ie+1, js-1:je+1))
+  allocate(hm(is-1:ie+1, js-1:je+1))
 
   allocate(gather(im, jm)[*])
 
@@ -65,21 +65,20 @@ program tsunami
   ! set initial velocity and mean water depth
   u = 0
   v = 0
-  hmean = 10
-    
+  hm = 10
+
   ! gather to image 1 and write water height to file
   gather(is:ie, js:je)[1] = h(is:ie, js:je)
   sync all
   n = 0
   if (this_image() == 1) then
-    !print *, n, gather(3 * im / 4, jm / 2)
-    print *, n, gather(1, 1)
-    !call write_field(gather, 'h', n)
+    print *, n, mean(gather)
+    call write_field(gather, 'h', n)
   end if
 
   time_loop: do n = 1, nm
 
-    call update_halo(h, indices)
+    call sync_edges(h, indices)
 
     ! compute u at next time step
     u = u - (u * diffx(u) / dx + v * diffy(u) / dy &
@@ -89,20 +88,18 @@ program tsunami
     v = v - (u * diffx(v) / dx + v * diffy(v) / dy &
       + g * diffy(h) / dy) * dt
 
-    call update_halo(u, indices)
-    call update_halo(v, indices)
+    call sync_edges(u, indices)
+    call sync_edges(v, indices)
 
     ! compute h at next time step
-    h = h - diffx(u * (hmean + h)) / dx * dt&
-          - diffy(v * (hmean + h)) / dy * dt
+    h = h - (diffx(u * (hm + h)) / dx + diffy(v * (hm + h)) / dy) * dt
 
     ! gather to image 1 and write water height to file
     gather(is:ie, js:je)[1] = h(is:ie, js:je)
     sync all
     if (this_image() == 1) then
-      !print *, n, gather(3 * im / 4, jm / 2)
-      print *, n, gather(1, 1)
-      !call write_field(gather, 'h', n)
+      print *, n, mean(gather)
+      call write_field(gather, 'h', n)
     end if
 
   end do time_loop

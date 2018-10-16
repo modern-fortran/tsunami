@@ -17,12 +17,6 @@ program test_tiling
 
   print *, 'this_image = ', this_image(), 'of', num_images()
 
-  sync all
-  do n = 1, num_images()
-    if (this_image() == n) print *, 'tile_ij2n(tile_n2ij(n)):', this_image(), tile_ij2n(tile_n2ij(this_image()))
-    sync all
-  end do
-
   if (this_image() == 1) print *, 'neighbors, periodic'
   sync all
   do n = 1, num_images()

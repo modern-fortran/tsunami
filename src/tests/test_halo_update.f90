@@ -30,7 +30,7 @@ program test_halo_update
     print *, 'before halo, north,', u(is:ie, je+1)
   end if
 
-  call update_halo(u, indices)
+  call sync_edges(u, indices)
 
   if (this_image() == 1) then
     print *, 'after halo, west,', u(is-1, js:je)
