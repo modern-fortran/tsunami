@@ -228,6 +228,7 @@ contains
 
   end function tile_neighbors_2d
 
+
   subroutine sync_edges(a, indices)
     real(rk), allocatable, intent(in out) :: a(:,:)
     integer(ik), intent(in) :: indices(4)
@@ -237,7 +238,7 @@ contains
     integer(ik) :: halo_size
 
     if (.not. allocated(a)) then
-      stop 'Error in update_halo: input array not allocated.'
+      error stop 'Error in update_halo: input array not allocated.'
     end if
 
     ! tile layout, neighbors, and indices
@@ -254,6 +255,7 @@ contains
     if (.not. allocated(halo)) allocate(halo(halo_size, 4)[*])
     halo = 0
 
+    !sync images(neighbors) !TODO currently fails with OpenCoarrays-2.2.0
     sync all
 
     ! copy data into coarray buffer
@@ -262,6 +264,7 @@ contains
     halo(1:ie-is+1,3)[neighbors(3)] = a(is:ie,js) ! send down
     halo(1:ie-is+1,4)[neighbors(4)] = a(is:ie,je) ! send up
 
+    !sync images(neighbors) !TODO currently fails with OpenCoarrays-2.2.0
     sync all
 
     ! copy from halo buffer into array
