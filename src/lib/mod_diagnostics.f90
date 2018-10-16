@@ -1,6 +1,6 @@
 module mod_diagnostics
 
-  ! Module that provides finite difference functions.
+  ! Provides various diagnostic functions.
 
   use mod_kinds, only: ik, rk
 
