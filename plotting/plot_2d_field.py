@@ -12,7 +12,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 
-dims = 102, 102
+dims = 100, 100
 field = np.reshape(np.fromfile(input_file, dtype='float32'), dims)
 
 fig = plt.figure(figsize=(8,7))
