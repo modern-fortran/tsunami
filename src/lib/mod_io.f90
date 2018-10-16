@@ -1,18 +1,22 @@
 module mod_io
 
+  ! Provides input/output procedures.
+
+  use mod_kinds, only: ik, rk
+
   implicit none
 
   private
   public :: write_field
-  
+
 contains
 
   subroutine write_field(field, fieldname, time)
     ! Writes a field into a binary file.
-    real, allocatable, intent(in) :: field(:,:)
+    real(rk), intent(in) :: field(:,:)
     character(len=*), intent(in) :: fieldname
-    integer, intent(in) :: time
-    integer :: fileunit, record_length
+    integer(ik), intent(in) :: time
+    integer(ik) :: fileunit, record_length
     character(len=100) :: filename, timestr
     write(timestr, '(i4.4)') time
     filename = 'tsunami_' // fieldname // '_' // trim(timestr) // '.dat'
