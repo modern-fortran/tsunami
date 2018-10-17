@@ -14,6 +14,7 @@ program tsunami
 
   use mod_diagnostics, only: mean
   use mod_diff, only: diffx => diffc_2d_x, diffy => diffc_2d_y
+  use mod_field, only: Field
   use mod_io, only: write_field
   use mod_kinds, only: ik, rk
   use mod_parallel, only: tile_indices, sync_edges
@@ -42,7 +43,19 @@ program tsunami
   integer(ik) :: is, ie, js, je ! global start and end indices
   integer(ik) :: indices(4)
 
+  type(Field) :: uu, vv, hh
+
   if (this_image() == 1) print *, 'Tsunami started'
+
+  uu = Field('x-velocity', [im, jm])
+  vv = Field('y-velocity', [im, jm])
+  hh = Field('Water height', [im, jm])
+
+  print *, shape(uu % data)
+  print *, uu % name
+  print *, this_image(), uu % neighbors
+  print *, this_image(), uu % edge_size
+  stop
 
   indices = tile_indices([im, jm])
   is = indices(1)
