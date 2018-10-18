@@ -58,8 +58,11 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Cray)
 endif()
 
 add_library(tsunami src/lib/mod_boundary.f90 src/lib/mod_diagnostics.f90 src/lib/mod_diff.f90 src/lib/mod_field.f90 src/lib/mod_io.f90 src/lib/mod_kinds.f90 src/lib/mod_parallel.f90)
+
 add_executable(app src/app/tsunami.f90)
+add_executable(app_dt src/app/tsunami_dt.f90)
 target_link_libraries(app tsunami)
+target_link_libraries(app_dt tsunami)
 
 enable_testing()
 foreach(exec tiling halo_update field)
