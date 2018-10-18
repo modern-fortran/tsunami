@@ -62,7 +62,7 @@ add_executable(app src/app/tsunami.f90)
 target_link_libraries(app tsunami)
 
 enable_testing()
-foreach(exec tiling halo_update)
+foreach(exec tiling halo_update field)
   add_executable(test_${exec} src/tests/test_${exec}.f90)
   target_link_libraries(test_${exec} tsunami)
   add_test(${exec} bin/test_${exec})
