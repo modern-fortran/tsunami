@@ -15,6 +15,10 @@ module mod_field
     integer(ik) :: neighbors(4)
     integer(ik) :: edge_size
     real(rk), allocatable :: data(:,:)
+  contains
+    procedure, private, pass(self) :: assign_array, assign_const_int, assign_const_real
+    procedure, public, pass(self) :: init_gaussian
+    generic :: assignment(=) => assign_array, assign_const_int, assign_const_real
   end type Field
 
   interface Field
@@ -39,5 +43,36 @@ contains
                            self % ub(2)-self % lb(2)+1)
     call co_max(self % edge_size)
   end function field_constructor
+
+  pure subroutine assign_array(self, a)
+    class(Field), intent(in out) :: self
+    real(rk), intent(in) :: a(:,:)
+    self % data = a
+  end subroutine assign_array
+
+  !TODO this doesn't seem to overload assignment on gfortran-8.2.0
+  !TODO check with other compilers
+  pure subroutine assign_const_int(self, a)
+    class(Field), intent(in out) :: self
+    integer(rk), intent(in) :: a
+    self % data = a
+  end subroutine assign_const_int
+
+  pure subroutine assign_const_real(self, a)
+    class(Field), intent(in out) :: self
+    real(rk), intent(in) :: a
+    self % data = a
+  end subroutine assign_const_real
+
+  pure subroutine init_gaussian(self, decay, ic, jc)
+    class(Field), intent(in out) :: self
+    real(rk), intent(in) :: decay ! the rate of decay of gaussian
+    integer(ik), intent(in) :: ic, jc ! center indices of the gaussian blob
+    integer(ik) :: i, j
+    do concurrent(i = self % lb(1)-1:self % ub(1)+1,&
+                  j = self % lb(2)-1:self % ub(2)+1)
+      self % data(i, j) = exp(-decay * ((i - ic)**2 + (j - jc)**2))
+    end do
+  end subroutine init_gaussian
 
 end module mod_field
