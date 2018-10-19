@@ -18,6 +18,7 @@ module mod_field
   contains
     procedure, private, pass(self) :: assign_array, assign_const_int, assign_const_real
     procedure, public, pass(self) :: init_gaussian
+    procedure, public, pass(self) :: sync_edges
     generic :: assignment(=) => assign_array, assign_const_int, assign_const_real
   end type Field
 
@@ -74,5 +75,40 @@ contains
       self % data(i, j) = exp(-decay * ((i - ic)**2 + (j - jc)**2))
     end do
   end subroutine init_gaussian
+
+  subroutine sync_edges(self)
+    class(Field), intent(in out) :: self
+    real(rk), allocatable :: edge(:,:)[:]
+    integer(ik) :: is, ie, js, je
+
+    is = self % lb(1)
+    ie = self % ub(1)
+    js = self % lb(2)
+    je = self % ub(2)
+
+    if (.not. allocated(edge)) allocate(edge(self % edge_size, 4)[*])
+    edge = 0
+
+    !sync images(neighbors) !TODO currently fails with OpenCoarrays-2.2.0
+    sync all
+
+    ! copy data into coarray buffer
+    edge(1:je-js+1,1)[self % neighbors(1)] = self % data(is,js:je) ! send left
+    edge(1:je-js+1,2)[self % neighbors(2)] = self % data(ie,js:je) ! send right
+    edge(1:ie-is+1,3)[self % neighbors(3)] = self % data(is:ie,js) ! send down
+    edge(1:ie-is+1,4)[self % neighbors(4)] = self % data(is:ie,je) ! send up
+
+    !sync images(neighbors) !TODO currently fails with OpenCoarrays-2.2.0
+    sync all
+
+    ! copy from halo buffer into array
+    self % data(is-1,js:je) = edge(1:je-js+1,2) ! from left
+    self % data(ie+1,js:je) = edge(1:je-js+1,1) ! from right
+    self % data(is:ie,js-1) = edge(1:ie-is+1,4) ! from down
+    self % data(is:ie,je+1) = edge(1:ie-is+1,3) ! from up
+
+    deallocate(edge)
+
+  end subroutine sync_edges
 
 end module mod_field

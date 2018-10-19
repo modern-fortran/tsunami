@@ -37,7 +37,7 @@ program tsunami_dt
   real(rk), allocatable :: gather(:,:)[:]
   real(rk), allocatable :: hm(:,:)
 
-  integer(ik), parameter :: ipos = 51, jpos = 51
+  integer(ik), parameter :: ic = 51, jc = 51
   real(rk), parameter :: decay = 0.02
 
   integer(ik) :: is, ie, js, je ! global start and end indices
@@ -52,28 +52,18 @@ program tsunami_dt
   hh = Field('Water height displacement', [im, jm])
   hhm = Field('Mean water height', [im, jm])
 
-  indices = tile_indices([im, jm])
-  is = indices(1)
-  ie = indices(2)
-  js = indices(3)
-  je = indices(4)
-
-  allocate(h(is-1:ie+1, js-1:je+1))
-  allocate(u(is-1:ie+1, js-1:je+1))
-  allocate(v(is-1:ie+1, js-1:je+1))
-  allocate(hm(is-1:ie+1, js-1:je+1))
-
   allocate(gather(im, jm)[*])
 
   ! initialize a gaussian blob centered at i = 25
-  do concurrent(i = is-1:ie+1, j = js-1:je+1)
-    h(i, j) = exp(-decay * ((i - ipos)**2 + (j - jpos)**2))
-  end do
+  call hh % init_gaussian(decay, ic, jc)
+  call hh % sync_edges()
 
   ! set initial velocity and mean water depth
-  u = 0
-  v = 0
-  hm = 10
+  uu = 0.
+  vv = 0.
+  hhm = 10.
+
+  stop
 
   ! gather to image 1 and write water height to file
   gather(is:ie, js:je)[1] = h(is:ie, js:je)
