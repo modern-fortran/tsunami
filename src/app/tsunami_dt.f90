@@ -27,7 +27,6 @@ program tsunami_dt
   real(rk), parameter :: dt = 0.02 ! time step [s]
   real(rk), parameter :: dx = 1 ! grid spacing [m]
   real(rk), parameter :: dy = 1 ! grid spacing [m]
-
   real(rk), parameter :: g = 9.8 ! gravitational acceleration [m/s]
 
   real(rk), allocatable :: gather(:,:)
@@ -76,10 +75,10 @@ program tsunami_dt
     h = h - (diffx(u * (hm + h)) / dx + diffy(v * (hm + h)) / dy) * dt
     call h % sync_edges()
 
-    !gather = h % gather(1)
+    gather = h % gather(1)
     if (this_image() == 1) then
-      print *, n!, mean(gather)
-      !call write_field(gather, 'h', n)
+      print *, n, mean(gather)
+      call write_field(gather, 'h', n)
     end if
 
   end do time_loop

@@ -22,7 +22,7 @@ program tsunami
 
   integer(ik), parameter :: im = 101 ! grid size in x
   integer(ik), parameter :: jm = 101 ! grid size in y
-  integer(ik), parameter :: nm = 100 ! number of time steps
+  integer(ik), parameter :: nm = 1000 ! number of time steps
 
   real(rk), parameter :: dt = 0.02 ! time step [s]
   real(rk), parameter :: dx = 1 ! grid spacing [m]
