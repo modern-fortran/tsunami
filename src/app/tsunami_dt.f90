@@ -34,8 +34,8 @@ program tsunami_dt
   real(rk), parameter :: g = 9.8 ! gravitational acceleration [m/s]
 
   real(rk), allocatable :: h(:,:), u(:,:), v(:,:)
-  real(rk), allocatable :: gather(:,:)[:]
   real(rk), allocatable :: hm(:,:)
+  real(rk), allocatable :: gather(:,:)
 
   integer(ik), parameter :: ic = 51, jc = 51
   real(rk), parameter :: decay = 0.02
@@ -52,7 +52,7 @@ program tsunami_dt
   hh = Field('Water height displacement', [im, jm])
   hhm = Field('Mean water height', [im, jm])
 
-  allocate(gather(im, jm)[*])
+  !allocate(gather(im, jm)[*])
 
   ! initialize a gaussian blob centered at i = 25
   call hh % init_gaussian(decay, ic, jc)
@@ -63,11 +63,7 @@ program tsunami_dt
   vv = 0.
   hhm = 10.
 
-  stop
-
-  ! gather to image 1 and write water height to file
-  gather(is:ie, js:je)[1] = h(is:ie, js:je)
-  sync all
+  gather = hh % gather(1)
   n = 0
   if (this_image() == 1) then
     print *, n, mean(gather)
@@ -92,9 +88,8 @@ program tsunami_dt
     ! compute h at next time step
     h = h - (diffx(u * (hm + h)) / dx + diffy(v * (hm + h)) / dy) * dt
 
-    ! gather to image 1 and write water height to file
-    gather(is:ie, js:je)[1] = h(is:ie, js:je)
-    sync all
+    gather = hh % gather(1)
+    n = 0
     if (this_image() == 1) then
       print *, n, mean(gather)
       call write_field(gather, 'h', n)

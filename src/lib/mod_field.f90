@@ -12,11 +12,13 @@ module mod_field
   type :: Field
     character(:), allocatable :: name
     integer(ik) :: lb(2), ub(2)
+    integer(ik) :: dims(2)
     integer(ik) :: neighbors(4)
     integer(ik) :: edge_size
     real(rk), allocatable :: data(:,:)
   contains
     procedure, private, pass(self) :: assign_array, assign_const_int, assign_const_real
+    procedure, public, pass(self) :: gather
     procedure, public, pass(self) :: init_gaussian
     procedure, public, pass(self) :: sync_edges
     generic :: assignment(=) => assign_array, assign_const_int, assign_const_real
@@ -33,6 +35,7 @@ contains
     integer(ik), intent(in) :: dims(2) ! domain size in x and y
     integer(ik) :: edge_size, indices(4)
     self % name = name
+    self % dims = dims
     indices = tile_indices(dims)
     self % lb = indices([1, 3])
     self % ub = indices([2, 4])
@@ -64,6 +67,22 @@ contains
     real(rk), intent(in) :: a
     self % data = a
   end subroutine assign_const_real
+
+  function gather(self, image)
+    ! Performs a gather of field data to image.
+    class(Field), intent(in) :: self
+    integer(ik), intent(in) :: image
+    real(rk), allocatable :: gather_coarray(:,:)[:]
+    real(rk) :: gather(self % dims(1), self % dims(2))
+    allocate(gather_coarray(self % dims(1), self % dims(2))[*])
+    associate(is => self % lb(1), ie => self % ub(1),&
+              js => self % lb(2), je => self % ub(2))
+      gather_coarray(is:ie, js:je)[image] = self % data(is:ie, js:je)
+      sync all
+      if (this_image() == image) gather = gather_coarray
+    end associate
+    deallocate(gather_coarray)
+  end function gather
 
   pure subroutine init_gaussian(self, decay, ic, jc)
     class(Field), intent(in out) :: self
