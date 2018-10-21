@@ -10,8 +10,6 @@ program tsunami
   !
   ! This version is parallelized.
 
-  use iso_fortran_env, only: output_unit
-
   use mod_diagnostics, only: mean
   use mod_diff, only: diffx, diffy
   use mod_io, only: write_field
@@ -24,7 +22,7 @@ program tsunami
 
   integer(ik), parameter :: im = 101 ! grid size in x
   integer(ik), parameter :: jm = 101 ! grid size in y
-  integer(ik), parameter :: nm = 1000 ! number of time steps
+  integer(ik), parameter :: nm = 100 ! number of time steps
 
   real(rk), parameter :: dt = 0.02 ! time step [s]
   real(rk), parameter :: dx = 1 ! grid spacing [m]
@@ -78,21 +76,19 @@ program tsunami
 
   time_loop: do n = 1, nm
 
-    call sync_edges(h, indices)
-
     ! compute u at next time step
     u = u - (u * diffx(u) / dx + v * diffy(u) / dy &
       + g * diffx(h) / dx) * dt
+    call sync_edges(u, indices)
 
     ! compute v at next time step
     v = v - (u * diffx(v) / dx + v * diffy(v) / dy &
       + g * diffy(h) / dy) * dt
-
-    call sync_edges(u, indices)
     call sync_edges(v, indices)
 
     ! compute h at next time step
     h = h - (diffx(u * (hm + h)) / dx + diffy(v * (hm + h)) / dy) * dt
+    call sync_edges(h, indices)
 
     ! gather to image 1 and write water height to file
     gather(is:ie, js:je)[1] = h(is:ie, js:je)
