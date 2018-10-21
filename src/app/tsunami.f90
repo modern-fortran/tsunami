@@ -13,7 +13,7 @@ program tsunami
   use iso_fortran_env, only: output_unit
 
   use mod_diagnostics, only: mean
-  use mod_diff, only: diffx => diffc_2d_x, diffy => diffc_2d_y
+  use mod_diff, only: diffx, diffy
   use mod_io, only: write_field
   use mod_kinds, only: ik, rk
   use mod_parallel, only: tile_indices, sync_edges
