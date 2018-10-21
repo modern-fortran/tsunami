@@ -2,26 +2,40 @@ module mod_field
 
   ! Provides the Field class and its methods.
 
+  use mod_diff, only: diffx_real => diffx, diffy_real => diffy
   use mod_kinds, only: ik, rk
   use mod_parallel, only: tile_indices, tile_neighbors_2d
   implicit none
 
   private
-  public :: Field
+  public :: Field, diffx, diffy
 
   type :: Field
+
     character(:), allocatable :: name
     integer(ik) :: lb(2), ub(2)
     integer(ik) :: dims(2)
     integer(ik) :: neighbors(4)
     integer(ik) :: edge_size
     real(rk), allocatable :: data(:,:)
+
   contains
+
     procedure, private, pass(self) :: assign_array, assign_const_int, assign_const_real
+    procedure, private, pass(self) :: array_mult_field, field_mult_array, field_mult_real, field_mult_field
+    procedure, private, pass(self) :: field_div_real
+    procedure, private, pass(self) :: field_add_field, field_add_real, real_add_field
+    procedure, private, pass(self) :: field_sub_field, field_sub_array
     procedure, public, pass(self) :: gather
     procedure, public, pass(self) :: init_gaussian
     procedure, public, pass(self) :: sync_edges
+
     generic :: assignment(=) => assign_array, assign_const_int, assign_const_real
+    generic :: operator(+) => field_add_field, field_add_real, real_add_field
+    generic :: operator(-) => field_sub_field, field_sub_array
+    generic :: operator(*) => field_mult_array, array_mult_field, field_mult_real, field_mult_field
+    generic :: operator(/) => field_div_real
+
   end type Field
 
   interface Field
@@ -52,6 +66,7 @@ contains
     class(Field), intent(in out) :: self
     real(rk), intent(in) :: a(:,:)
     self % data = a
+    !call self % sync_edges()
   end subroutine assign_array
 
   !TODO this doesn't seem to overload assignment on gfortran-8.2.0
@@ -60,13 +75,36 @@ contains
     class(Field), intent(in out) :: self
     integer(rk), intent(in) :: a
     self % data = a
+    !call self % sync_edges()
   end subroutine assign_const_int
 
   pure subroutine assign_const_real(self, a)
     class(Field), intent(in out) :: self
     real(rk), intent(in) :: a
     self % data = a
+    !call self % sync_edges()
   end subroutine assign_const_real
+
+  !pure subroutine assign_field(self, f)
+  !  class(Field), intent(in out) :: self
+  !  class(Field), intent(in) :: f
+  !  self = f
+  !  !call self % sync_edges()
+  !end subroutine assign_field
+
+  pure function diffx(input_field)
+    ! Returns the finite difference in x of input_field as a 2-d array.
+    class(Field), intent(in) :: input_field
+    real(rk), allocatable :: diffx(:,:)
+    diffx = diffx_real(input_field % data)
+  end function diffx
+
+  pure function diffy(input_field)
+    ! Returns the finite difference in y of input_field as a 2-d array.
+    class(Field), intent(in) :: input_field
+    real(rk), allocatable :: diffy(:,:)
+    diffy = diffy_real(input_field % data)
+  end function diffy
 
   function gather(self, image)
     ! Performs a gather of field data to image.
@@ -94,6 +132,73 @@ contains
       self % data(i, j) = exp(-decay * ((i - ic)**2 + (j - jc)**2))
     end do
   end subroutine init_gaussian
+
+  pure type(Field) function field_add_field(self, f) result(res)
+    class(Field), intent(in) :: self, f
+    res = self
+    res = self % data + f % data
+  end function field_add_field
+
+  pure type(Field) function field_add_real(self, x) result(res)
+    class(Field), intent(in) :: self
+    real(rk), intent(in) :: x(:,:)
+    res = self
+    res = self % data + x
+  end function field_add_real
+
+  pure type(Field) function real_add_field(x, self) result(res)
+    class(Field), intent(in) :: self
+    real(rk), intent(in) :: x(:,:)
+    res = self
+    res = self % data + x
+  end function real_add_field
+
+  pure type(Field) function field_div_real(self, x) result(res)
+    class(Field), intent(in) :: self
+    real(rk), intent(in) :: x
+    res = self
+    res = self % data / x
+  end function field_div_real
+
+  pure type(Field) function field_mult_array(self, x) result(res)
+    class(Field), intent(in) :: self
+    real(rk), intent(in) :: x(:,:)
+    res = self
+    res = self % data * x
+  end function field_mult_array
+
+  pure type(Field) function field_mult_real(self, x) result(res)
+    class(Field), intent(in) :: self
+    real(rk), intent(in) :: x
+    res = self
+    res = self % data * x
+  end function field_mult_real
+
+  pure type(Field) function field_mult_field(self, f) result(res)
+    class(Field), intent(in) :: self, f
+    res = self
+    res = self % data * f % data
+  end function field_mult_field
+
+  pure type(Field) function array_mult_field(x, self) result(res)
+    real(rk), intent(in) :: x(:,:)
+    class(Field), intent(in) :: self
+    res = self
+    res = self % data * x
+  end function array_mult_field
+
+  pure type(Field) function field_sub_array(self, x) result(res)
+    class(Field), intent(in) :: self
+    real(rk), intent(in) :: x(:,:)
+    res = self
+    res = self % data - x
+  end function field_sub_array
+
+  pure type(Field) function field_sub_field(self, f) result(res)
+    class(Field), intent(in) :: self, f
+    res = self
+    res = self % data - f % data
+  end function field_sub_field
 
   subroutine sync_edges(self)
     class(Field), intent(in out) :: self

@@ -10,14 +10,11 @@ program tsunami_dt
   !
   ! This version is parallelized, and uses derived types.
 
-  use iso_fortran_env, only: output_unit
-
   use mod_diagnostics, only: mean
-  use mod_diff, only: diffx => diffc_2d_x, diffy => diffc_2d_y
-  use mod_field, only: Field
+  use mod_field, only: Field, diffx, diffy
   use mod_io, only: write_field
   use mod_kinds, only: ik, rk
-  use mod_parallel, only: tile_indices, sync_edges
+  use mod_parallel, only: sync_edges
 
   implicit none
 
@@ -33,37 +30,30 @@ program tsunami_dt
 
   real(rk), parameter :: g = 9.8 ! gravitational acceleration [m/s]
 
-  real(rk), allocatable :: h(:,:), u(:,:), v(:,:)
-  real(rk), allocatable :: hm(:,:)
   real(rk), allocatable :: gather(:,:)
 
   integer(ik), parameter :: ic = 51, jc = 51
   real(rk), parameter :: decay = 0.02
 
-  integer(ik) :: is, ie, js, je ! global start and end indices
-  integer(ik) :: indices(4)
-
-  type(Field) :: hh, uu, vv, hhm
+  type(Field) :: h, u, v, hm
 
   if (this_image() == 1) print *, 'Tsunami started'
 
-  uu = Field('x-component of velocity', [im, jm])
-  vv = Field('y-component of velocity', [im, jm])
-  hh = Field('Water height displacement', [im, jm])
-  hhm = Field('Mean water height', [im, jm])
-
-  !allocate(gather(im, jm)[*])
+  u = Field('x-component of velocity', [im, jm])
+  v = Field('y-component of velocity', [im, jm])
+  h = Field('Water height displacement', [im, jm])
+  hm = Field('Mean water height', [im, jm])
 
   ! initialize a gaussian blob centered at i = 25
-  call hh % init_gaussian(decay, ic, jc)
-  call hh % sync_edges()
+  call h % init_gaussian(decay, ic, jc)
+  call h % sync_edges()
 
   ! set initial velocity and mean water depth
-  uu = 0.
-  vv = 0.
-  hhm = 10.
+  u = 0.
+  v = 0.
+  hm = 10.
 
-  gather = hh % gather(1)
+  gather = h % gather(1)
   n = 0
   if (this_image() == 1) then
     print *, n, mean(gather)
@@ -72,27 +62,24 @@ program tsunami_dt
 
   time_loop: do n = 1, nm
 
-    call sync_edges(h, indices)
-
     ! compute u at next time step
     u = u - (u * diffx(u) / dx + v * diffy(u) / dy &
       + g * diffx(h) / dx) * dt
+    call u % sync_edges()
 
     ! compute v at next time step
     v = v - (u * diffx(v) / dx + v * diffy(v) / dy &
       + g * diffy(h) / dy) * dt
-
-    call sync_edges(u, indices)
-    call sync_edges(v, indices)
+    call v % sync_edges()
 
     ! compute h at next time step
     h = h - (diffx(u * (hm + h)) / dx + diffy(v * (hm + h)) / dy) * dt
+    call h % sync_edges()
 
-    gather = hh % gather(1)
-    n = 0
+    !gather = h % gather(1)
     if (this_image() == 1) then
-      print *, n, mean(gather)
-      call write_field(gather, 'h', n)
+      print *, n!, mean(gather)
+      !call write_field(gather, 'h', n)
     end if
 
   end do time_loop
