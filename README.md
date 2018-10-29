@@ -11,7 +11,7 @@ for [Modern Fortran: Building Efficient Parallel Applications](https://www.manni
 To run the model on your local machine, get the code using git:
 
 ```
-git clone https://github.com/fortran-in-action/tsunami
+git clone https://github.com/modern-fortran/tsunami
 ```
 
 ### Switching between different tags
@@ -85,7 +85,7 @@ All the plotting code is located in the `plotting` directory.
 You will need a Python build (either 2.7 or 3.x is fine) 
 with numpy and matplotlib packages installed.
 
-If you're setting up Python from scratch, I recomment using Python 3
+If you're setting up Python from scratch, I recommend using Python 3
 and creating a dedicated virtual environment. 
 For example, in `tsunami/plotting` directory:
 
