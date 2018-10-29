@@ -70,11 +70,14 @@ program tsunami
   sync all
   n = 0
   if (this_image() == 1) then
-    print *, n, mean(gather)
     call write_field(gather, 'h', n)
   end if
 
   time_loop: do n = 1, nm
+
+    if (this_image() == 1) then
+      print *, 'Computing time step', n, '/', nm
+    end if
 
     ! compute u at next time step
     u = u - (u * diffx(u) / dx + v * diffy(u) / dy &
@@ -94,7 +97,6 @@ program tsunami
     gather(is:ie, js:je)[1] = h(is:ie, js:je)
     sync all
     if (this_image() == 1) then
-      print *, n, mean(gather)
       call write_field(gather, 'h', n)
     end if
 

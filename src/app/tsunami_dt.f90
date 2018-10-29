@@ -10,15 +10,12 @@ program tsunami_dt
   !
   ! This version is parallelized, and uses derived types.
 
-  use mod_diagnostics, only: mean
   use mod_field, only: Field, diffx, diffy
-  use mod_io, only: write_field
   use mod_kinds, only: ik, rk
-  use mod_parallel, only: sync_edges
 
   implicit none
 
-  integer(ik) :: i, j, n
+  integer(ik) :: n
 
   integer(ik), parameter :: im = 101 ! grid size in x
   integer(ik), parameter :: jm = 101 ! grid size in y
@@ -29,8 +26,6 @@ program tsunami_dt
   real(rk), parameter :: dy = 1 ! grid spacing [m]
   real(rk), parameter :: g = 9.8 ! gravitational acceleration [m/s]
 
-  real(rk), allocatable :: gather(:,:)
-
   integer(ik), parameter :: ic = 51, jc = 51
   real(rk), parameter :: decay = 0.02
 
@@ -38,10 +33,10 @@ program tsunami_dt
 
   if (this_image() == 1) print *, 'Tsunami started'
 
-  u = Field('x-component of velocity', [im, jm])
-  v = Field('y-component of velocity', [im, jm])
-  h = Field('Water height displacement', [im, jm])
-  hm = Field('Mean water height', [im, jm])
+  u = Field('u', [im, jm])
+  v = Field('v', [im, jm])
+  h = Field('h', [im, jm])
+  hm = Field('hm', [im, jm])
 
   ! initialize a gaussian blob centered at i = 25
   call h % init_gaussian(decay, ic, jc)
@@ -52,14 +47,13 @@ program tsunami_dt
   v = 0.
   hm = 10.
 
-  gather = h % gather(1)
-  n = 0
-  if (this_image() == 1) then
-    print *, n, mean(gather)
-    call write_field(gather, 'h', n)
-  end if
+  call h % write(0)
 
   time_loop: do n = 1, nm
+
+    if (this_image() == 1) then
+      print *, 'Computing time step', n, '/', nm
+    end if
 
     ! compute u at next time step
     u = u - (u * diffx(u) / dx + v * diffy(u) / dy &
@@ -75,11 +69,7 @@ program tsunami_dt
     h = h - (diffx(u * (hm + h)) / dx + diffy(v * (hm + h)) / dy) * dt
     call h % sync_edges()
 
-    gather = h % gather(1)
-    if (this_image() == 1) then
-      print *, n, mean(gather)
-      call write_field(gather, 'h', n)
-    end if
+    call h % write(n)
 
   end do time_loop
 

@@ -3,8 +3,10 @@ module mod_field
   ! Provides the Field class and its methods.
 
   use mod_diff, only: diffx_real => diffx, diffy_real => diffy
+  use mod_io, only: write_field
   use mod_kinds, only: ik, rk
   use mod_parallel, only: tile_indices, tile_neighbors_2d
+
   implicit none
 
   private
@@ -29,6 +31,7 @@ module mod_field
     procedure, public, pass(self) :: gather
     procedure, public, pass(self) :: init_gaussian
     procedure, public, pass(self) :: sync_edges
+    procedure, public, pass(self) :: write
 
     generic :: assignment(=) => assign_array, assign_const_int, assign_const_real
     generic :: operator(+) => field_add_field, field_add_real, real_add_field
@@ -66,31 +69,19 @@ contains
     class(Field), intent(in out) :: self
     real(rk), intent(in) :: a(:,:)
     self % data = a
-    !call self % sync_edges()
   end subroutine assign_array
 
-  !TODO this doesn't seem to overload assignment on gfortran-8.2.0
-  !TODO check with other compilers
   pure subroutine assign_const_int(self, a)
     class(Field), intent(in out) :: self
     integer(rk), intent(in) :: a
     self % data = a
-    !call self % sync_edges()
   end subroutine assign_const_int
 
   pure subroutine assign_const_real(self, a)
     class(Field), intent(in out) :: self
     real(rk), intent(in) :: a
     self % data = a
-    !call self % sync_edges()
   end subroutine assign_const_real
-
-  !pure subroutine assign_field(self, f)
-  !  class(Field), intent(in out) :: self
-  !  class(Field), intent(in) :: f
-  !  self = f
-  !  !call self % sync_edges()
-  !end subroutine assign_field
 
   pure function diffx(input_field)
     ! Returns the finite difference in x of input_field as a 2-d array.
@@ -213,7 +204,6 @@ contains
     if (.not. allocated(edge)) allocate(edge(self % edge_size, 4)[*])
     edge = 0
 
-    !sync images(neighbors) !TODO currently fails with OpenCoarrays-2.2.0
     sync all
 
     ! copy data into coarray buffer
@@ -222,7 +212,6 @@ contains
     edge(1:ie-is+1,3)[self % neighbors(3)] = self % data(is:ie,js) ! send down
     edge(1:ie-is+1,4)[self % neighbors(4)] = self % data(is:ie,je) ! send up
 
-    !sync images(neighbors) !TODO currently fails with OpenCoarrays-2.2.0
     sync all
 
     ! copy from halo buffer into array
@@ -234,5 +223,15 @@ contains
     deallocate(edge)
 
   end subroutine sync_edges
+
+  subroutine write(self, n)
+    class(Field), intent(in) :: self
+    integer(ik), intent(in) :: n
+    real(rk), allocatable :: gather(:,:)
+    gather = self % gather(1)
+    if (this_image() == 1) then
+      call write_field(gather, self % name, n)
+    end if
+  end subroutine write
 
 end module mod_field
