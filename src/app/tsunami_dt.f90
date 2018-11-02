@@ -38,13 +38,11 @@ program tsunami_dt
   h = Field('h', [im, jm])
   hm = Field('hm', [im, jm])
 
-  ! initialize a gaussian blob centered at i = 25
+  ! initialize a gaussian blob in the center
   call h % init_gaussian(decay, ic, jc)
   call h % sync_edges()
 
-  ! set initial velocity and mean water depth
-  u = 0.
-  v = 0.
+  ! set mean water depth
   hm = 10.
 
   call h % write(0)
