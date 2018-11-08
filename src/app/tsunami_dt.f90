@@ -40,17 +40,17 @@ program tsunami_dt
 
   ! initialize a gaussian blob in the center
   call h % init_gaussian(decay, ic, jc)
-  call h % sync_edges()
 
   ! set mean water depth
-  hm = 10.
+  hm = 10
 
   call h % write(0)
 
   time_loop: do n = 1, nm
 
     if (this_image() == 1) then
-      print *, 'Computing time step', n, '/', nm
+      !print *, 'Computing time step', n, '/', nm
+      print *, n, h % data(20, 20)
     end if
 
     ! compute u at next time step

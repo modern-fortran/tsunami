@@ -23,7 +23,7 @@ module mod_field
 
   contains
 
-    procedure, private, pass(self) :: assign_array, assign_const_int, assign_const_real
+    procedure, private, pass(self) :: assign_array, assign_const_int, assign_const_real, assign_field
     procedure, private, pass(self) :: array_mult_field, field_mult_array, field_mult_real, field_mult_field
     procedure, private, pass(self) :: field_div_real
     procedure, private, pass(self) :: field_add_field, field_add_real, real_add_field
@@ -83,6 +83,17 @@ contains
     self % data = a
   end subroutine assign_const_real
 
+  subroutine assign_field(self, f)
+    class(Field), intent(in out) :: self
+    type(Field), intent(in) :: f
+    self % lb = f % lb
+    self % ub = f % ub
+    self % dims = f % dims
+    self % neighbors = f % neighbors
+    self % data = f % data
+    call self % sync_edges()
+  end subroutine assign_field
+
   pure function diffx(input_field)
     ! Returns the finite difference in x of input_field as a 2-d array.
     class(Field), intent(in) :: input_field
@@ -113,7 +124,7 @@ contains
     deallocate(gather_coarray)
   end function gather
 
-  pure subroutine init_gaussian(self, decay, ic, jc)
+  subroutine init_gaussian(self, decay, ic, jc)
     class(Field), intent(in out) :: self
     real(rk), intent(in) :: decay ! the rate of decay of gaussian
     integer(ik), intent(in) :: ic, jc ! center indices of the gaussian blob
@@ -122,6 +133,7 @@ contains
                   j = self % lb(2)-1:self % ub(2)+1)
       self % data(i, j) = exp(-decay * ((i - ic)**2 + (j - jc)**2))
     end do
+    call self % sync_edges()
   end subroutine init_gaussian
 
   pure type(Field) function field_add_field(self, f) result(res)
