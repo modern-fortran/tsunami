@@ -13,7 +13,7 @@ done
 # compare the output
 for n in {2..4}; do
   echo diff between num_images = 1 and 2:
-  diff out_[12].txt
+  diff out_[1${n}].txt
 done
 
 # remove temporary output files
