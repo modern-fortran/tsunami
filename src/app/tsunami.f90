@@ -76,7 +76,8 @@ program tsunami
   time_loop: do n = 1, nm
 
     if (this_image() == 1) then
-      print *, 'Computing time step', n, '/', nm
+      !print *, 'Computing time step', n, '/', nm
+      print *, n, h(20, 20)
     end if
 
     ! compute u at next time step
