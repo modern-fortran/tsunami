@@ -108,6 +108,22 @@ contains
     diffy = diffy_real(input_field % data)
   end function diffy
 
+  pure subroutine from_field(target, source)
+    ! Initializes Field instance target using components
+    ! from Field instance source. Used to initialize a 
+    ! Field from another Field without invoking the 
+    ! assignment operator.
+    type(Field), intent(in out) :: target
+    type(Field), intent(in) :: source
+    target % name = source % name
+    target % lb = source % lb
+    target % ub = source % ub
+    target % dims = source % dims
+    target % neighbors = source % neighbors
+    target % edge_size = source % edge_size
+    target % data = source % data
+  end subroutine from_field
+
   function gather(self, image)
     ! Performs a gather of field data to image.
     class(Field), intent(in) :: self
@@ -138,68 +154,68 @@ contains
 
   pure type(Field) function field_add_field(self, f) result(res)
     class(Field), intent(in) :: self, f
-    res = self
+    call from_field(res, self)
     res = self % data + f % data
   end function field_add_field
 
   pure type(Field) function field_add_real(self, x) result(res)
     class(Field), intent(in) :: self
     real(rk), intent(in) :: x(:,:)
-    res = self
+    call from_field(res, self)
     res = self % data + x
   end function field_add_real
 
   pure type(Field) function real_add_field(x, self) result(res)
     class(Field), intent(in) :: self
     real(rk), intent(in) :: x(:,:)
-    res = self
+    call from_field(res, self)
     res = self % data + x
   end function real_add_field
 
   pure type(Field) function field_div_real(self, x) result(res)
     class(Field), intent(in) :: self
     real(rk), intent(in) :: x
-    res = self
+    call from_field(res, self)
     res = self % data / x
   end function field_div_real
 
   pure type(Field) function field_mult_array(self, x) result(res)
     class(Field), intent(in) :: self
     real(rk), intent(in) :: x(:,:)
-    res = self
+    call from_field(res, self)
     res = self % data * x
   end function field_mult_array
 
   pure type(Field) function field_mult_real(self, x) result(res)
     class(Field), intent(in) :: self
     real(rk), intent(in) :: x
-    res = self
+    call from_field(res, self)
     res = self % data * x
   end function field_mult_real
 
   pure type(Field) function field_mult_field(self, f) result(res)
     class(Field), intent(in) :: self, f
-    res = self
+    call from_field(res, self)
     res = self % data * f % data
   end function field_mult_field
 
   pure type(Field) function array_mult_field(x, self) result(res)
     real(rk), intent(in) :: x(:,:)
     class(Field), intent(in) :: self
-    res = self
+    call from_field(res, self)
     res = self % data * x
   end function array_mult_field
 
   pure type(Field) function field_sub_array(self, x) result(res)
     class(Field), intent(in) :: self
     real(rk), intent(in) :: x(:,:)
-    res = self
+    call from_field(res, self)
     res = self % data - x
   end function field_sub_array
 
   pure type(Field) function field_sub_field(self, f) result(res)
     class(Field), intent(in) :: self, f
-    res = self
+    call from_field(res, self)
     res = self % data - f % data
   end function field_sub_field
 
