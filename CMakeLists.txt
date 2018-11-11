@@ -65,7 +65,7 @@ target_link_libraries(app tsunami)
 target_link_libraries(app_dt tsunami)
 
 enable_testing()
-foreach(exec tiling halo_update field)
+foreach(exec field sync_edges sync_on_assign tiling)
   add_executable(test_${exec} src/tests/test_${exec}.f90)
   target_link_libraries(test_${exec} tsunami)
   add_test(${exec} bin/test_${exec})

@@ -1,4 +1,4 @@
-program test_halo_update
+program test_sync_edges
 
   use mod_kinds
   use mod_parallel
@@ -39,4 +39,4 @@ program test_halo_update
     print *, 'after halo, north,', u(is:ie, je+1)
   end if
 
-end program test_halo_update
+end program test_sync_edges
