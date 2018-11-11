@@ -10,8 +10,8 @@ module mod_field
   implicit none
 
   private
-  public :: Field, diffx, diffy
-
+  public :: Field, diffx, diffy, from_field
+    
   type :: Field
 
     character(:), allocatable :: name
@@ -33,7 +33,7 @@ module mod_field
     procedure, public, pass(self) :: sync_edges
     procedure, public, pass(self) :: write
 
-    generic :: assignment(=) => assign_array, assign_const_int, assign_const_real
+    generic :: assignment(=) => assign_array, assign_const_int, assign_const_real, assign_field
     generic :: operator(+) => field_add_field, field_add_real, real_add_field
     generic :: operator(-) => field_sub_field, field_sub_array
     generic :: operator(*) => field_mult_array, array_mult_field, field_mult_real, field_mult_field
@@ -86,11 +86,7 @@ contains
   subroutine assign_field(self, f)
     class(Field), intent(in out) :: self
     type(Field), intent(in) :: f
-    self % lb = f % lb
-    self % ub = f % ub
-    self % dims = f % dims
-    self % neighbors = f % neighbors
-    self % data = f % data
+    call from_field(self, f)
     call self % sync_edges()
   end subroutine assign_field
 
@@ -221,7 +217,7 @@ contains
 
   subroutine sync_edges(self)
     class(Field), intent(in out) :: self
-    real(rk), allocatable :: edge(:,:)[:]
+    real(rk), allocatable, save :: edge(:,:)[:]
     integer(ik) :: is, ie, js, je
 
     is = self % lb(1)
@@ -229,8 +225,9 @@ contains
     js = self % lb(2)
     je = self % ub(2)
 
-    if (.not. allocated(edge)) allocate(edge(self % edge_size, 4)[*])
-    edge = 0
+    if (.not. allocated(edge)) then
+      allocate(edge(self % edge_size, 4)[*])
+    end if
 
     sync all
 
@@ -247,8 +244,6 @@ contains
     self % data(ie+1,js:je) = edge(1:je-js+1,1) ! from right
     self % data(is:ie,js-1) = edge(1:ie-is+1,4) ! from down
     self % data(is:ie,je+1) = edge(1:ie-is+1,3) ! from up
-
-    deallocate(edge)
 
   end subroutine sync_edges
 

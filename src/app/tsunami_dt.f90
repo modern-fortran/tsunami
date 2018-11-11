@@ -56,16 +56,13 @@ program tsunami_dt
     ! compute u at next time step
     u = u - (u * diffx(u) / dx + v * diffy(u) / dy &
       + g * diffx(h) / dx) * dt
-    call u % sync_edges()
 
     ! compute v at next time step
     v = v - (u * diffx(v) / dx + v * diffy(v) / dy &
       + g * diffy(h) / dy) * dt
-    call v % sync_edges()
 
     ! compute h at next time step
     h = h - (diffx(u * (hm + h)) / dx + diffy(v * (hm + h)) / dy) * dt
-    call h % sync_edges()
 
     call h % write(n)
 
