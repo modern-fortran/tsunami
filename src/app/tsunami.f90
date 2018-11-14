@@ -25,10 +25,9 @@ program tsunami
   integer(ik), parameter :: nm = 1000 ! number of time steps
 
   real(rk), parameter :: dt = 0.02 ! time step [s]
-  real(rk), parameter :: dx = 1 ! grid spacing [m]
-  real(rk), parameter :: dy = 1 ! grid spacing [m]
-
-  real(rk), parameter :: g = 9.8 ! gravitational acceleration [m/s]
+  real(rk), parameter :: dx = 1 ! grid spacing in x [m]
+  real(rk), parameter :: dy = 1 ! grid spacing in y [m]
+  real(rk), parameter :: g = 9.8 ! gravitational acceleration [m/s^2]
 
   real(rk), allocatable :: h(:,:), u(:,:), v(:,:)
   real(rk), allocatable :: gather(:,:)[:]
@@ -76,8 +75,7 @@ program tsunami
   time_loop: do n = 1, nm
 
     if (this_image() == 1) then
-      !print *, 'Computing time step', n, '/', nm
-      print *, n, h(20, 20)
+      print *, 'Computing time step', n, '/', nm
     end if
 
     ! compute u at next time step
