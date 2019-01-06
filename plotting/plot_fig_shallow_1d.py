@@ -1,3 +1,6 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib
 """
 plot_fig_shallow1d.py
 
@@ -10,10 +13,7 @@ args = parser.parse_args()
 
 input_file = args.input_file
 
-import matplotlib
 matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-import numpy as np
 
 dt = 0.02
 
@@ -23,18 +23,18 @@ data = [line.rstrip().split() for line in open(input_file).readlines()]
 time = [float(line[0]) for line in data]
 u = np.array([[float(x) for x in line[1:]] for line in data])
 x = np.arange(1, u.shape[1]+1)
-#time_steps = [0, 160, 7420, 9990]
+# time_steps = [0, 160, 7420, 9990]
 time_steps = [0, 80, 3152, 4862]
 
-fig = plt.figure(figsize=(8,10))
+fig = plt.figure(figsize=(8, 10))
 axes = [plt.subplot2grid((4, 1), (row, 0), colspan=1, rowspan=1)
-    for row in range(4)]
+        for row in range(4)]
 
 for ax in axes:
     n = axes.index(ax)
     ax.plot(x, u[time_steps[n], :], 'b-')
     ax.fill_between(x, -0.2, u[time_steps[n], :], color='b', alpha=0.4)
-    #ax.grid(True)
+    # ax.grid(True)
     ax.set_xlim(1, 100)
     ax.set_ylim(-0.2, 1.2)
     ax.set_ylabel('Height [m]', fontsize=16)
