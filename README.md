@@ -1,6 +1,7 @@
 # tsunami
 
 [![Build Status](https://travis-ci.org/modern-fortran/tsunami.svg?branch=master)](https://travis-ci.org/modern-fortran/tsunami)
+[![Build status](https://ci.appveyor.com/api/projects/status/ttcpllua2iqdv937?svg=true)](https://ci.appveyor.com/project/scivision/tsunami)
 [![GitHub issues](https://img.shields.io/github/issues/modern-fortran/tsunami.svg)](https://github.com/modern-fortran/tsunami/issues)
 
 A shallow water equations solver. Companion running example 

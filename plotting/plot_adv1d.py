@@ -1,3 +1,6 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib
 """
 plot_adv1d.py
 
@@ -10,10 +13,7 @@ args = parser.parse_args()
 
 input_file = args.input_file
 
-import matplotlib
 matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-import numpy as np
 
 # read data into a list
 data = [line.rstrip().split() for line in open(input_file).readlines()]
@@ -23,9 +23,9 @@ u = np.array([[float(x) for x in line[1:]] for line in data])
 x = np.arange(1, u.shape[1]+1)
 time_steps = [0, 25, 50, 75]
 
-fig = plt.figure(figsize=(8,10))
+fig = plt.figure(figsize=(8, 10))
 axes = [plt.subplot2grid((4, 1), (row, 0), colspan=1, rowspan=1)
-    for row in range(4)]
+        for row in range(4)]
 
 for ax in axes:
     n = axes.index(ax)
