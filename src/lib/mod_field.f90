@@ -24,9 +24,9 @@ module mod_field
   contains
 
     procedure, private, pass(self) :: assign_array, assign_const_int, assign_const_real, assign_field
-    procedure, private, pass(self) :: array_mult_field, field_mult_array, field_mult_real, field_mult_field
+    procedure, private, pass(self) :: field_mul_array, field_mul_real, field_mul_field
     procedure, private, pass(self) :: field_div_real
-    procedure, private, pass(self) :: field_add_field, field_add_real, real_add_field
+    procedure, private, pass(self) :: field_add_field, field_add_real
     procedure, private, pass(self) :: field_sub_field, field_sub_array
     procedure, public, pass(self) :: gather
     procedure, public, pass(self) :: init_gaussian
@@ -34,9 +34,9 @@ module mod_field
     procedure, public, pass(self) :: write
 
     generic :: assignment(=) => assign_array, assign_const_int, assign_const_real, assign_field
-    generic :: operator(+) => field_add_field, field_add_real, real_add_field
+    generic :: operator(+) => field_add_field, field_add_real
     generic :: operator(-) => field_sub_field, field_sub_array
-    generic :: operator(*) => field_mult_array, array_mult_field, field_mult_real, field_mult_field
+    generic :: operator(*) => field_mul_array, field_mul_real, field_mul_field
     generic :: operator(/) => field_div_real
 
   end type Field
@@ -161,13 +161,6 @@ contains
     res = self % data + x
   end function field_add_real
 
-  pure type(Field) function real_add_field(x, self) result(res)
-    class(Field), intent(in) :: self
-    real(rk), intent(in) :: x(:,:)
-    call from_field(res, self)
-    res = self % data + x
-  end function real_add_field
-
   pure type(Field) function field_div_real(self, x) result(res)
     class(Field), intent(in) :: self
     real(rk), intent(in) :: x
@@ -175,32 +168,25 @@ contains
     res = self % data / x
   end function field_div_real
 
-  pure type(Field) function field_mult_array(self, x) result(res)
+  pure type(Field) function field_mul_array(self, x) result(res)
     class(Field), intent(in) :: self
     real(rk), intent(in) :: x(:,:)
     call from_field(res, self)
     res = self % data * x
-  end function field_mult_array
+  end function field_mul_array
 
-  pure type(Field) function field_mult_real(self, x) result(res)
+  pure type(Field) function field_mul_real(self, x) result(res)
     class(Field), intent(in) :: self
     real(rk), intent(in) :: x
     call from_field(res, self)
     res = self % data * x
-  end function field_mult_real
+  end function field_mul_real
 
-  pure type(Field) function field_mult_field(self, f) result(res)
+  pure type(Field) function field_mul_field(self, f) result(res)
     class(Field), intent(in) :: self, f
     call from_field(res, self)
     res = self % data * f % data
-  end function field_mult_field
-
-  pure type(Field) function array_mult_field(x, self) result(res)
-    real(rk), intent(in) :: x(:,:)
-    class(Field), intent(in) :: self
-    call from_field(res, self)
-    res = self % data * x
-  end function array_mult_field
+  end function field_mul_field
 
   pure type(Field) function field_sub_array(self, x) result(res)
     class(Field), intent(in) :: self
