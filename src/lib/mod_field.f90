@@ -151,54 +151,54 @@ contains
   pure type(Field) function field_add_field(self, f) result(res)
     class(Field), intent(in) :: self, f
     call from_field(res, self)
-    res = self % data + f % data
+    res % data = self % data + f % data
   end function field_add_field
 
   pure type(Field) function field_add_real(self, x) result(res)
     class(Field), intent(in) :: self
     real(rk), intent(in) :: x(:,:)
     call from_field(res, self)
-    res = self % data + x
+    res % data = self % data + x
   end function field_add_real
 
   pure type(Field) function field_div_real(self, x) result(res)
     class(Field), intent(in) :: self
     real(rk), intent(in) :: x
     call from_field(res, self)
-    res = self % data / x
+    res % data = self % data / x
   end function field_div_real
 
   pure type(Field) function field_mul_array(self, x) result(res)
     class(Field), intent(in) :: self
     real(rk), intent(in) :: x(:,:)
     call from_field(res, self)
-    res = self % data * x
+    res % data = self % data * x
   end function field_mul_array
 
   pure type(Field) function field_mul_real(self, x) result(res)
     class(Field), intent(in) :: self
     real(rk), intent(in) :: x
     call from_field(res, self)
-    res = self % data * x
+    res % data = self % data * x
   end function field_mul_real
 
   pure type(Field) function field_mul_field(self, f) result(res)
     class(Field), intent(in) :: self, f
     call from_field(res, self)
-    res = self % data * f % data
+    res % data = self % data * f % data
   end function field_mul_field
 
   pure type(Field) function field_sub_array(self, x) result(res)
     class(Field), intent(in) :: self
     real(rk), intent(in) :: x(:,:)
     call from_field(res, self)
-    res = self % data - x
+    res % data = self % data - x
   end function field_sub_array
 
   pure type(Field) function field_sub_field(self, f) result(res)
     class(Field), intent(in) :: self, f
     call from_field(res, self)
-    res = self % data - f % data
+    res % data = self % data - f % data
   end function field_sub_field
 
   subroutine sync_edges(self)
