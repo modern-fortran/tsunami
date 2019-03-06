@@ -23,19 +23,19 @@ module mod_field
 
   contains
 
-    procedure, private, pass(self) :: assign_array, assign_const_int, assign_const_real, assign_field
+    procedure, private, pass(self) :: assign_field, assign_real_scalar
     procedure, private, pass(self) :: field_mul_array, field_mul_real, field_mul_field
     procedure, private, pass(self) :: field_div_real
     procedure, private, pass(self) :: field_add_field, field_add_real
-    procedure, private, pass(self) :: field_sub_field, field_sub_array
+    procedure, private, pass(self) :: field_sub_field, field_sub_real
     procedure, public, pass(self) :: gather
     procedure, public, pass(self) :: init_gaussian
     procedure, public, pass(self) :: sync_edges
     procedure, public, pass(self) :: write
 
-    generic :: assignment(=) => assign_array, assign_const_int, assign_const_real, assign_field
+    generic :: assignment(=) => assign_field, assign_real_scalar
     generic :: operator(+) => field_add_field, field_add_real
-    generic :: operator(-) => field_sub_field, field_sub_array
+    generic :: operator(-) => field_sub_field, field_sub_real
     generic :: operator(*) => field_mul_array, field_mul_real, field_mul_field
     generic :: operator(/) => field_div_real
 
@@ -65,30 +65,18 @@ contains
     call co_max(self % edge_size)
   end function field_constructor
 
-  pure subroutine assign_array(self, a)
-    class(Field), intent(in out) :: self
-    real(rk), intent(in) :: a(:,:)
-    self % data = a
-  end subroutine assign_array
-
-  pure subroutine assign_const_int(self, a)
-    class(Field), intent(in out) :: self
-    integer(rk), intent(in) :: a
-    self % data = a
-  end subroutine assign_const_int
-
-  pure subroutine assign_const_real(self, a)
-    class(Field), intent(in out) :: self
-    real(rk), intent(in) :: a
-    self % data = a
-  end subroutine assign_const_real
-
   subroutine assign_field(self, f)
     class(Field), intent(in out) :: self
-    type(Field), intent(in) :: f
+    class(Field), intent(in) :: f
     call from_field(self, f)
     call self % sync_edges()
   end subroutine assign_field
+
+  pure subroutine assign_real_scalar(self, a)
+    class(Field), intent(in out) :: self
+    real(rk), intent(in) :: a
+    self % data = a
+  end subroutine assign_real_scalar
 
   pure function diffx(input_field)
     ! Returns the finite difference in x of input_field as a 2-d array.
@@ -188,12 +176,12 @@ contains
     res % data = self % data * f % data
   end function field_mul_field
 
-  pure type(Field) function field_sub_array(self, x) result(res)
+  pure type(Field) function field_sub_real(self, x) result(res)
     class(Field), intent(in) :: self
     real(rk), intent(in) :: x(:,:)
     call from_field(res, self)
     res % data = self % data - x
-  end function field_sub_array
+  end function field_sub_real
 
   pure type(Field) function field_sub_field(self, f) result(res)
     class(Field), intent(in) :: self, f

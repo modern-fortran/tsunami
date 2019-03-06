@@ -42,7 +42,7 @@ program tsunami_dt
   call h % init_gaussian(decay, ic, jc)
 
   ! set mean water depth
-  hm = 10
+  hm = 10.0
 
   call h % write(0)
 
