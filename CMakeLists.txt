@@ -56,7 +56,7 @@ endif()
 
 find_package(Coarray REQUIRED)
 
-add_library(tsunami src/lib/mod_boundary.f90 src/lib/mod_diagnostics.f90 src/lib/mod_diff.f90 src/lib/mod_field.f90 src/lib/mod_io.f90 src/lib/mod_kinds.f90 src/lib/mod_parallel.f90)
+add_library(tsunami src/lib/mod_boundary.f90 src/lib/mod_config.f90 src/lib/mod_diagnostics.f90 src/lib/mod_diff.f90 src/lib/mod_field.f90 src/lib/mod_io.f90 src/lib/mod_kinds.f90 src/lib/mod_parallel.f90)
 target_compile_options(tsunami PUBLIC ${Coarray_COMPILE_OPTIONS})
 target_link_libraries(tsunami PUBLIC ${Coarray_LIBRARIES})
 
