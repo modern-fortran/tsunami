@@ -10,6 +10,7 @@ program tsunami_dt
   !
   ! This version is parallelized, and uses derived types.
 
+  use mod_config, only: Config, config_from_namelist
   use mod_field, only: Field, diffx, diffy
   use mod_kinds, only: ik, rk
 
@@ -17,21 +18,20 @@ program tsunami_dt
 
   integer(ik) :: n
 
-  integer(ik), parameter :: im = 101 ! grid size in x
-  integer(ik), parameter :: jm = 101 ! grid size in y
-  integer(ik), parameter :: nm = 1000 ! number of time steps
-
-  real(rk), parameter :: dt = 0.02 ! time step [s]
-  real(rk), parameter :: dx = 1 ! grid spacing in x [m]
-  real(rk), parameter :: dy = 1 ! grid spacing in y [m]
   real(rk), parameter :: g = 9.8 ! gravitational acceleration [m/s^2]
-
   integer(ik), parameter :: ic = 51, jc = 51
   real(rk), parameter :: decay = 0.02
 
+  type(Config) :: conf
   type(Field) :: h, u, v, hm
 
   if (this_image() == 1) print *, 'Tsunami started'
+
+  conf = config_from_namelist('tsunami.nml')
+
+  associate (im => conf % grid_size_x, jm => conf % grid_size_y, &
+             nm => conf % num_time_steps, dt => conf % time_step, &
+             dx => conf % grid_spacing_x, dy => conf % grid_spacing_y)
 
   u = Field('u', [im, jm])
   v = Field('v', [im, jm])
@@ -66,5 +66,7 @@ program tsunami_dt
     call h % write(n)
 
   end do time_loop
+
+  end associate
 
 end program tsunami_dt
