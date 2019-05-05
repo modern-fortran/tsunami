@@ -27,7 +27,7 @@ program tsunami_dt
 
   if (this_image() == 1) print *, 'Tsunami started'
 
-  conf = config_from_namelist('tsunami.nml')
+  conf = config_from_namelist('../tsunami.nml')
 
   associate (im => conf % grid_size_x, jm => conf % grid_size_y, &
              nm => conf % num_time_steps, dt => conf % time_step, &
