@@ -1,8 +1,0 @@
-&domain
-  grid_size_x = 101     ! number of grid cells in x-dimension
-  grid_size_y = 101     ! number of grid cells in y-dimension
-  num_time_steps = 1000 ! number of time steps
-  time_step = 0.02      ! time step [s]
-  grid_spacing_x = 1    ! grid cell size [m] in x-dimension
-  grid_spacing_y = 1    ! grid cell size [m] in y-dimension
-/
