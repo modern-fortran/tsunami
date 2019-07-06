@@ -17,12 +17,12 @@ program tsunami
 
   real :: du(im), u(im)
 
-  integer, parameter :: ipos = 25
+  integer, parameter :: icenter = 25
   real, parameter :: decay = 0.02
 
-  ! initialize a gaussian blob centered at i = 25
+  ! initialize to a Gaussian blob
   do concurrent(i = 1:im)
-    u(i) = exp(-decay * (i - ipos)**2)
+    u(i) = exp(-decay * (i - icenter)**2)
   end do
 
   ! write initial state to screen

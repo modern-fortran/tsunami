@@ -4,7 +4,8 @@ program tsunami
   !
   !     du/dt + c du/dx = 0
   !
-  ! The finite difference calculation is abstracted in the function diff().
+  ! The initial conditions and the finite difference calculation 
+  ! are abstracted as external procedures.
 
   implicit none
 
@@ -19,13 +20,11 @@ program tsunami
 
   real :: u(im)
 
-  integer, parameter :: ipos = 25
+  integer, parameter :: icenter = 25
   real, parameter :: decay = 0.02
 
-  ! initialize a gaussian blob centered at i = 25
-  do concurrent(i = 1:im)
-    u(i) = exp(-decay * (i - ipos)**2)
-  end do
+  ! initialize to a Gaussian blob
+  call set_gaussian_blob(u, icenter, decay)
 
   ! write initial state to screen
   print *, 0, u
@@ -51,5 +50,17 @@ contains
     dx(1) = x(1) - x(im)
     dx(2:im) = x(2:im) - x(1:im-1)
   end function diff
+
+  pure subroutine set_gaussian_blob(x, icenter, decay)
+    ! Sets the values of x to a Gaussian shape centered on icenter
+    ! that decays with the given input decay.
+    real, intent(in out) :: x(:)
+    integer, intent(in) :: icenter
+    real, intent(in) :: decay
+    integer :: i
+    do concurrent(i = 1:size(x))
+      x(i) = exp(-decay * (i - icenter)**2)
+    end do
+  end subroutine set_gaussian_blob
 
 end program tsunami
