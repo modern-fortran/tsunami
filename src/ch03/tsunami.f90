@@ -3,6 +3,8 @@ program tsunami
   ! This version solves the linearized 1-d advection equation:
   !
   !     du/dt + c du/dx = 0
+  !
+  ! The finite difference calculation is abstracted in the function diff().
 
   implicit none
 
@@ -15,7 +17,7 @@ program tsunami
   real, parameter :: dx = 1 ! grid spacing [m]
   real, parameter :: c = 1 ! phase speed [m/s]
 
-  real :: du(im), u(im)
+  real :: u(im)
 
   integer, parameter :: ipos = 25
   real, parameter :: decay = 0.02
@@ -30,22 +32,24 @@ program tsunami
 
   time_loop: do n = 1, nm
 
-    ! apply the periodic boundary condition
-    du(1) = u(1) - u(im)
-
-    ! calculate the difference of u in space
-    do concurrent (i = 2:im)
-      du(i) = u(i) - u(i-1)
-    end do
-
     ! compute u at next time step
-    do concurrent (i = 1:im)
-      u(i) = u(i) - c * du(i) / dx * dt
-    end do
+    u = u - c * diff(u) / dx * dt
 
     ! write current state to screen
     print *, n, u
 
   end do time_loop
+
+contains
+
+  pure function diff(x) result(dx)
+    ! Returns a 1st-order upstream finite difference of a 1-d array.
+    real, intent(in) :: x(:)
+    real :: dx(size(x))
+    integer :: im
+    im = size(x)
+    dx(1) = x(1) - x(im)
+    dx(2:im) = x(2:im) - x(1:im-1)
+  end function diff
 
 end program tsunami
