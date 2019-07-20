@@ -42,7 +42,7 @@ program tsunami
   time_loop: do n = 1, nm
 
     ! compute u at next time step
-      u = u - (u * diff(u) + g * diff(h)) / dx * dt
+    u = u - (u * diff(u) + g * diff(h)) / dx * dt
 
     ! compute h at next time step
     h = h - diff(u * (hmean + h)) / dx * dt
