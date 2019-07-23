@@ -4,11 +4,11 @@ module mod_initial
   implicit none
 
   private
-  public :: set_gaussian_blob
+  public :: set_gaussian
 
 contains
 
-  pure subroutine set_gaussian_blob(x, icenter, decay)
+  pure subroutine set_gaussian(x, icenter, decay)
     ! Sets the values of x to a Gaussian shape centered on icenter
     ! that decays with the given input decay.
     real(real32), intent(in out) :: x(:)
@@ -18,6 +18,6 @@ contains
     do concurrent(i = 1:size(x))
       x(i) = exp(-decay * (i - icenter)**2)
     end do
-  end subroutine set_gaussian_blob
+  end subroutine set_gaussian
 
 end module mod_initial

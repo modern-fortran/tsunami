@@ -9,7 +9,7 @@ program tsunami
 
   use iso_fortran_env, only: int32, real32
   use mod_diff, only: diff => diffc
-  use mod_initial, only: set_gaussian_blob
+  use mod_initial, only: set_gaussian
 
   implicit none
 
@@ -28,7 +28,7 @@ program tsunami
   real(real32), parameter :: decay = 0.02
 
   ! initialize water height to a Gaussian blob
-  call set_gaussian_blob(h, icenter, decay)
+  call set_gaussian(h, icenter, decay)
 
   ! initialize water velocity to zero
   u = 0

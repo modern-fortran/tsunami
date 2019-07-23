@@ -23,8 +23,8 @@ program tsunami
   integer, parameter :: icenter = 25
   real, parameter :: decay = 0.02
 
-  ! initialize to a Gaussian blob
-  call set_gaussian_blob(u, icenter, decay)
+  ! initialize to a Gaussian shape
+  call set_gaussian(u, icenter, decay)
 
   ! write initial state to screen
   print *, 0, u
@@ -51,7 +51,7 @@ contains
     dx(2:im) = x(2:im) - x(1:im-1)
   end function diff
 
-  pure subroutine set_gaussian_blob(x, icenter, decay)
+  pure subroutine set_gaussian(x, icenter, decay)
     ! Sets the values of x to a Gaussian shape centered on icenter
     ! that decays with the given input decay.
     real, intent(in out) :: x(:)
@@ -61,6 +61,6 @@ contains
     do concurrent(i = 1:size(x))
       x(i) = exp(-decay * (i - icenter)**2)
     end do
-  end subroutine set_gaussian_blob
+  end subroutine set_gaussian
 
 end program tsunami
