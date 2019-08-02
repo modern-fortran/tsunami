@@ -4,11 +4,11 @@ module mod_diff
   implicit none
 
   private
-  public :: diffu, diffc
+  public :: diff_upwind, diff_centered
 
 contains
 
-  pure function diffc(x) result(dx)
+  pure function diff_centered(x) result(dx)
     ! Returns a 2nd order centered difference of a 1-d array,
     ! with periodic boundary condition.
     real(real32), intent(in) :: x(:)
@@ -19,10 +19,10 @@ contains
     dx(im) = x(1) - x(im-1)
     dx(2:im-1) = x(3:im) - x(1:im-1)
     dx = 0.5 * dx
-  end function diffc
+  end function diff_centered
 
 
-  pure function diffu(x) result(dx)
+  pure function diff_upwind(x) result(dx)
     ! Returns a 1st-order upstream finite difference of a 1-d array,
     ! with periodic boundary condition.
     real(real32), intent(in) :: x(:)
@@ -31,6 +31,6 @@ contains
     im = size(x)
     dx(1) = x(1) - x(im)
     dx(2:im) = x(2:im) - x(1:im-1)
-  end function diffu
+  end function diff_upwind
 
 end module mod_diff

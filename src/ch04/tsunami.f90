@@ -8,7 +8,7 @@ program tsunami
   ! are abstracted as external procedures.
 
   use iso_fortran_env, only: int32, real32
-  use mod_diff, only: diff => diffc
+  use mod_diff, only: diff => diff_centered
   use mod_initial, only: set_gaussian
 
   implicit none
