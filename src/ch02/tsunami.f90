@@ -8,43 +8,43 @@ program tsunami
 
   integer :: i, n
 
-  integer, parameter :: im = 100 ! grid size in x
-  integer, parameter :: nm = 100 ! number of time steps
+  integer, parameter :: grid_size = 100 ! grid size in x
+  integer, parameter :: num_time_steps = 100 ! number of time steps
 
   real, parameter :: dt = 1 ! time step [s]
   real, parameter :: dx = 1 ! grid spacing [m]
-  real, parameter :: c = 1 ! phase speed [m/s]
+  real, parameter :: c = 1 ! background flow speed [m/s]
 
-  real :: du(im), u(im)
+  real :: h(grid_size), dh(grid_size)
 
   integer, parameter :: icenter = 25
   real, parameter :: decay = 0.02
 
-  ! initialize to a Gaussian blob
-  do concurrent(i = 1:im)
-    u(i) = exp(-decay * (i - icenter)**2)
+  ! initialize water height to a Gaussian shape
+  do concurrent(i = 1:grid_size)
+    h(i) = exp(-decay * (i - icenter)**2)
   end do
 
   ! write initial state to screen
-  print *, 0, u
+  print *, 0, h
 
-  time_loop: do n = 1, nm
+  time_loop: do n = 1, num_time_steps
 
     ! apply the periodic boundary condition
-    du(1) = u(1) - u(im)
+    dh(1) = h(1) - h(grid_size)
 
     ! calculate the difference of u in space
-    do concurrent (i = 2:im)
-      du(i) = u(i) - u(i-1)
+    do concurrent (i = 2:grid_size)
+      dh(i) = h(i) - h(i-1)
     end do
 
     ! compute u at next time step
-    do concurrent (i = 1:im)
-      u(i) = u(i) - c * du(i) / dx * dt
+    do concurrent (i = 1:grid_size)
+      h(i) = h(i) - c * dh(i) / dx * dt
     end do
 
     ! write current state to screen
-    print *, n, u
+    print *, n, h
 
   end do time_loop
 
