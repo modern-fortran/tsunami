@@ -20,6 +20,12 @@ program tsunami
   integer, parameter :: icenter = 25
   real, parameter :: decay = 0.02
 
+  ! check input parameter values
+  if (grid_size < 1) stop 'grid_size must be > 0'
+  if (dt <= 0) stop 'time step dt must be > 0'
+  if (dx <= 0) stop 'grid spacing dx must be > 0'
+  if (c <= 0) stop 'background flow speed c must be > 0'
+
   ! initialize water height to a Gaussian shape
   do concurrent(i = 1:grid_size)
     h(i) = exp(-decay * (i - icenter)**2)

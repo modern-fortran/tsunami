@@ -9,33 +9,39 @@ program tsunami
 
   implicit none
 
-  integer :: i, n
+  integer :: n
 
-  integer, parameter :: im = 100 ! grid size in x
-  integer, parameter :: nm = 100 ! number of time steps
+  integer, parameter :: grid_size = 100 ! grid size in x
+  integer, parameter :: num_time_steps = 100 ! number of time steps
 
   real, parameter :: dt = 1 ! time step [s]
   real, parameter :: dx = 1 ! grid spacing [m]
   real, parameter :: c = 1 ! phase speed [m/s]
 
-  real :: u(im)
+  real :: h(grid_size)
 
   integer, parameter :: icenter = 25
   real, parameter :: decay = 0.02
 
+  ! check input parameter values
+  if (grid_size < 1) stop 'grid_size must be > 0'
+  if (dt <= 0) stop 'time step dt must be > 0'
+  if (dx <= 0) stop 'grid spacing dx must be > 0'
+  if (c <= 0) stop 'background flow speed c must be > 0'
+
   ! initialize to a Gaussian shape
-  call set_gaussian(u, icenter, decay)
+  call set_gaussian(h, icenter, decay)
 
   ! write initial state to screen
-  print *, 0, u
+  print *, 0, h
 
-  time_loop: do n = 1, nm
+  time_loop: do n = 1, num_time_steps
 
     ! compute u at next time step
-    u = u - c * diff(u) / dx * dt
+    h = h - c * diff(h) / dx * dt
 
     ! write current state to screen
-    print *, n, u
+    print *, n, h
 
   end do time_loop
 
