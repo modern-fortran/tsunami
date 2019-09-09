@@ -17,7 +17,7 @@ contains
     im = size(x)
     dx(1) = x(2) - x(im)
     dx(im) = x(1) - x(im-1)
-    dx(2:im-1) = x(3:im) - x(1:im-1)
+    dx(2:im-1) = x(3:im) - x(1:im-2)
     dx = 0.5 * dx
   end function diff_centered
 
