@@ -39,7 +39,7 @@ program tsunami
   integer(ik) :: ims, ime ! local start and end memory indices
   integer(ik) :: tile_size
 
-  if (mod(im, num_images()) > 0) then
+  if (mod(grid_size, num_images()) > 0) then
     error stop 'Error: grid_size must be divisible by number of images'
   end if
 
