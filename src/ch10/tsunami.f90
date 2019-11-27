@@ -19,7 +19,7 @@ program tsunami
 
   integer(ik), parameter :: im = 101 ! grid size in x
   integer(ik), parameter :: jm = 101 ! grid size in y
-  integer(ik), parameter :: nm = 1000 ! number of time steps
+  integer(ik), parameter :: num_time_steps = 1000 ! number of time steps
 
   real(rk), parameter :: dt = 0.02 ! time step [s]
   real(rk), parameter :: dx = 1 ! grid spacing in x [m]
@@ -46,11 +46,10 @@ program tsunami
 
   call h % write(0)
 
-  time_loop: do n = 1, nm
+  time_loop: do n = 1, num_time_steps
 
-    if (this_image() == 1) then
-      print *, 'Computing time step', n, '/', nm
-    end if
+    if (this_image() == 1) &
+      print *, 'Computing time step', n, '/', num_time_steps
 
     ! compute u at next time step
     u = u - (u * diffx(u) / dx + v * diffy(u) / dy &
