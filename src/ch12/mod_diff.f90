@@ -17,10 +17,8 @@ contains
     real(rk) :: dx(size(x, dim=1), size(x, dim=2))
     integer(ik) :: i, im
     im = size(x, dim=1)
-    dx = 0
-    do concurrent(i = 2:im-1)
-      dx(i,:) = 0.5 * (x(i+1,:) - x(i-1,:))
-    end do
+    dx([1,im],:) = 0
+    dx(2:im-1,:) = 0.5 * (x(3:im,:) - x(1:im-2,:))
   end function diffx
 
   pure function diffy(x) result(dx)
@@ -29,10 +27,8 @@ contains
     real(rk) :: dx(size(x, dim=1), size(x, dim=2))
     integer(ik) :: j, jm
     jm = size(x, dim=2)
-    dx = 0
-    do concurrent(j = 2:jm-1)
-      dx(:,j) = 0.5 * (x(:,j+1) - x(:,j-1))
-    end do
+    dx(:,[1,jm]) = 0
+    dx(:,2:jm-1) = 0.5 * (x(:,3:jm) - x(:,1:jm-2))
   end function diffy
 
 end module mod_diff
