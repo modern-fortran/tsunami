@@ -2,6 +2,7 @@ module mod_field
 
   ! Provides the Field class and its methods.
 
+  use iso_fortran_env, only: event_type
   use mod_diff, only: diffx_real => diffx, diffy_real => diffy
   use mod_io, only: write_field
   use mod_kinds, only: ik, rk
@@ -129,8 +130,8 @@ contains
     real(rk), intent(in) :: decay ! the rate of decay of gaussian
     integer(ik), intent(in) :: ic, jc ! center indices of the gaussian blob
     integer(ik) :: i, j
-    do concurrent(i = self % lb(1)-1:self % ub(1)+1,&
-                  j = self % lb(2)-1:self % ub(2)+1)
+    do concurrent(i = self % lb(1):self % ub(1),&
+                  j = self % lb(2):self % ub(2))
       self % data(i, j) = exp(-decay * ((i - ic)**2 + (j - jc)**2))
     end do
     call self % sync_edges()
@@ -192,32 +193,31 @@ contains
   subroutine sync_edges(self)
     class(Field), intent(in out) :: self
     real(rk), allocatable, save :: edge(:,:)[:]
-    integer(ik) :: is, ie, js, je
 
-    is = self % lb(1)
-    ie = self % ub(1)
-    js = self % lb(2)
-    je = self % ub(2)
+    associate(is => self % lb(1), ie => self % ub(1),&
+              js => self % lb(2), je => self % ub(2),&
+              neighbors => self % neighbors)
 
-    if (.not. allocated(edge)) then
-      allocate(edge(self % edge_size, 4)[*])
-    end if
+      if (.not. allocated(edge)) &
+        allocate(edge(self % edge_size, 4)[*])
 
-    sync all
+      sync images(set(neighbors))
 
-    ! copy data into coarray buffer
-    edge(1:je-js+1,1)[self % neighbors(1)] = self % data(is,js:je) ! send left
-    edge(1:je-js+1,2)[self % neighbors(2)] = self % data(ie,js:je) ! send right
-    edge(1:ie-is+1,3)[self % neighbors(3)] = self % data(is:ie,js) ! send down
-    edge(1:ie-is+1,4)[self % neighbors(4)] = self % data(is:ie,je) ! send up
+      ! copy data into coarray buffer
+      edge(1:je-js+1,1)[neighbors(1)] = self % data(is,js:je) ! send left
+      edge(1:je-js+1,2)[neighbors(2)] = self % data(ie,js:je) ! send right
+      edge(1:ie-is+1,3)[neighbors(3)] = self % data(is:ie,js) ! send down
+      edge(1:ie-is+1,4)[neighbors(4)] = self % data(is:ie,je) ! send up
 
-    sync all
+      sync images(set(neighbors))
 
-    ! copy from halo buffer into array
-    self % data(is-1,js:je) = edge(1:je-js+1,2) ! from left
-    self % data(ie+1,js:je) = edge(1:je-js+1,1) ! from right
-    self % data(is:ie,js-1) = edge(1:ie-is+1,4) ! from down
-    self % data(is:ie,je+1) = edge(1:ie-is+1,3) ! from up
+      ! copy from halo buffer into array
+      self % data(is-1,js:je) = edge(1:je-js+1,2) ! from left
+      self % data(ie+1,js:je) = edge(1:je-js+1,1) ! from right
+      self % data(is:ie,js-1) = edge(1:ie-is+1,4) ! from down
+      self % data(is:ie,je+1) = edge(1:ie-is+1,3) ! from up
+
+    end associate
 
   end subroutine sync_edges
 
@@ -230,5 +230,15 @@ contains
       call write_field(gather, self % name, n)
     end if
   end subroutine write
+
+  pure recursive function set(a) result(res)
+    integer, intent(in) :: a(:)
+    integer, allocatable :: res(:)
+    if (size(a) > 1) then
+      res = [a(1), set(pack(a(2:), .not. a(2:) == a(1)))]
+    else
+      res = a
+    end if
+  end function set
 
 end module mod_field
