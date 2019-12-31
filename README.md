@@ -1,8 +1,6 @@
 # tsunami
 
-[![GitHub issues](https://img.shields.io/github/issues/modern-fortran/tsunami.svg)](https://github.com/modern-fortran/tsunami/issues)
-
-A shallow water equations solver. 
+A parallel shallow water equations solver. 
 Companion running example for [Modern Fortran: Building Efficient Parallel Applications](https://www.manning.com/books/modern-fortran?a_aid=modernfortran&a_bid=2dc4d442).
 
 ## Organization
@@ -25,9 +23,14 @@ Teams, Events, and Collectives can be used for some more advanced parallel patte
 
 ### Get the code
 
+You can get the latest code by cloning the master branch:
+
 ```
 git clone https://github.com/modern-fortran/tsunami
 ```
+
+or by downloading it as a [zip file]
+(https://github.com/modern-fortran/tsunami/archive/master.zip).
 
 ### Build the code
 
@@ -35,6 +38,12 @@ git clone https://github.com/modern-fortran/tsunami
 cd tsunami
 make
 ```
+
+You can compile the tsunami versions in chapters 2, 3, and 4
+with gfortran alone.
+For the code in chapters 7, 8, 10, and 12, you'll need the latest
+stable build of OpenCoarrays, which will give you the `caf` 
+compiler wrapper.
 
 ### Set up the Python environment for visualization (optional)
 
