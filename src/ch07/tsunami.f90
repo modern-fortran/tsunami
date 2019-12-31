@@ -5,39 +5,38 @@ program tsunami
   ! Solves the non-linear 1-d shallow water equation:
   !
   !     du/dt + u du/dx + g dh/dx = 0
-  !
   !     dh/dt + d(hu)/dx = 0
   !
   ! This version is parallelized.
 
+  use iso_fortran_env, only: int32, real32
   use mod_diff, only: diff => diff_centered
-  use mod_kinds, only: ik, rk
   use mod_parallel, only: tile_indices, tile_neighbors
 
   implicit none
 
-  integer(ik) :: i, n
+  integer(int32) :: i, n
 
-  integer(ik), parameter :: grid_size = 100 ! grid size in x
-  integer(ik), parameter :: num_time_steps = 5000 ! number of time steps
+  integer(int32), parameter :: grid_size = 100 ! grid size in x
+  integer(int32), parameter :: num_time_steps = 5000 ! number of time steps
 
-  real(rk), parameter :: dt = 0.02 ! time step [s]
-  real(rk), parameter :: dx = 1 ! grid spacing [m]
-  real(rk), parameter :: g = 9.8 ! gravitational acceleration [m/s]
+  real(real32), parameter :: dt = 0.02 ! time step [s]
+  real(real32), parameter :: dx = 1 ! grid spacing [m]
+  real(real32), parameter :: g = 9.8 ! gravitational acceleration [m/s]
 
-  real(rk), allocatable :: h(:)[:], u(:)[:]
-  real(rk), allocatable :: gather(:)[:]
-  real(rk), allocatable :: hmean(:)
+  real(real32), allocatable :: h(:)[:], u(:)[:]
+  real(real32), allocatable :: gather(:)[:]
+  real(real32), allocatable :: hmean(:)
 
-  integer(ik), parameter :: ipos = 25
-  real(rk), parameter :: decay = 0.02
+  integer(int32), parameter :: ipos = 25
+  real(real32), parameter :: decay = 0.02
 
-  integer(ik) :: indices(2), neighbors(2)
-  integer(ik) :: left, right
-  integer(ik) :: is, ie ! global start and end indices
-  integer(ik) :: ils, ile ! local start and end computational indices
-  integer(ik) :: ims, ime ! local start and end memory indices
-  integer(ik) :: tile_size
+  integer(int32) :: indices(2), neighbors(2)
+  integer(int32) :: left, right
+  integer(int32) :: is, ie ! global start and end indices
+  integer(int32) :: ils, ile ! local start and end computational indices
+  integer(int32) :: ims, ime ! local start and end memory indices
+  integer(int32) :: tile_size
 
   if (mod(grid_size, num_images()) > 0) then
     error stop 'Error: grid_size must be divisible by number of images'

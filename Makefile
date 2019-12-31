@@ -1,30 +1,35 @@
 # tsunami Makefile
 
-FC = caf
-FCFLAGS = -O3
-
 .PHONY: all clean
 
-all: ch02 ch03 ch04 ch07 ch10
+all: ch02 ch03 ch04 ch07 ch08 ch10 ch12
 
 ch02:
-	$(MAKE) FC=$(FC) FCFLAGS=$(FCFLAGS) --directory=src/ch02
+	$(MAKE) --directory=src/$@
 
 ch03:
-	$(MAKE) FC=$(FC) FCFLAGS=$(FCFLAGS) --directory=src/ch03
+	$(MAKE) --directory=src/$@
 
 ch04:
-	$(MAKE) FC=$(FC) FCFLAGS=$(FCFLAGS) --directory=src/ch04
+	$(MAKE) --directory=src/$@
 
 ch07:
-	$(MAKE) FC=$(FC) FCFLAGS=$(FCFLAGS) --directory=src/ch07
+	$(MAKE) --directory=src/$@
+
+ch08:
+	$(MAKE) --directory=src/$@
 
 ch10:
-	$(MAKE) FC=$(FC) FCFLAGS=$(FCFLAGS) --directory=src/ch10
+	$(MAKE) --directory=src/$@
+
+ch12:
+	$(MAKE) --directory=src/$@
 
 clean:
 	$(MAKE) clean --directory=src/ch02
 	$(MAKE) clean --directory=src/ch03
 	$(MAKE) clean --directory=src/ch04
 	$(MAKE) clean --directory=src/ch07
+	$(MAKE) clean --directory=src/ch08
 	$(MAKE) clean --directory=src/ch10
+	$(MAKE) clean --directory=src/ch12

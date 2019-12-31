@@ -14,9 +14,8 @@ First encounter with declaration, variables, loops, branches, arithmetic, and wr
 We use this opportunity to augment the simulator to solve for non-linear gravity waves.
 * **Chapter 7**: We parallelize the program from Chapter 4 using coarrays and observe the speed up.
 * **Chapter 8**: We refactor our program from Chapter 7 to model our physical quantities (water height and velocity)
-using a derived type.
-* **Chapter 9**: In this chapter, we focus on the `Field` derived type and implement the common arithmetic operations
-as type-bound methods. 
+using a derived type, and implement common arithmetic operations as 
+type-bound methods.
 * **Chapter 10**: We continue the work on the code from Chapter 9, and overload the assignment operator to 
 automatically synchronize the data across parallel images on every field assignment.
 * **Chapter 12**: In the final chapter, we revisit the parallel code from Chapter 10 and explore how Fortran 2018
@@ -37,7 +36,9 @@ cd tsunami
 make
 ```
 
-### Set up the Python environment for graphics
+### Set up the Python environment for visualization (optional)
+
+Python scripts are provided to visualize tsunami output.
 
 ```
 python3 -m venv venv

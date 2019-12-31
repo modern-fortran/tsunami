@@ -1,12 +1,10 @@
-# tsunami Makefile
-
 FC = caf
 FCFLAGS = -O3
 
+OBJS = mod_diff.o mod_field.o mod_io.o mod_parallel.o
+
 .PHONY: all clean
 .SUFFIXES: .f90 .o
-
-OBJS = mod_diff.o mod_field.o mod_io.o mod_parallel.o
 
 all: tsunami
 

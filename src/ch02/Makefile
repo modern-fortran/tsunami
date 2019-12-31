@@ -1,4 +1,5 @@
-# tsunami Makefile
+FC = gfortran
+FCFLAGS = -O3
 
 .PHONY: all clean
 

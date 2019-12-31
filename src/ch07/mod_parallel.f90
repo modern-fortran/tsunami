@@ -3,7 +3,7 @@ module mod_parallel
   ! A module to provide parallel facilities 
   ! to the shallow water solver.
 
-  use mod_kinds, only: ik, rk
+  use iso_fortran_env, only: int32, real32
 
   implicit none
 
@@ -13,13 +13,11 @@ module mod_parallel
 contains
 
   pure function tile_indices(dims)
-
     ! Given input global array size, return start and end index
     ! of a parallel 1-d tile that correspond to this image.
-
-    integer(ik), intent(in) :: dims
-    integer(ik) :: tile_indices(2)
-    integer(ik) :: offset, tile_size
+    integer(int32), intent(in) :: dims
+    integer(int32) :: tile_indices(2)
+    integer(int32) :: offset, tile_size
 
     tile_size = dims / num_images()
 
@@ -37,12 +35,10 @@ contains
   end function tile_indices
 
   pure function tile_neighbors()
-
     ! Returns the image indices corresponding 
     ! to left and right neighbor tiles.
-
-    integer(ik) :: tile_neighbors(2)
-    integer(ik) :: left, right
+    integer(int32) :: tile_neighbors(2)
+    integer(int32) :: left, right
 
     if (num_images() > 1) then
       left = this_image() - 1

@@ -10,24 +10,24 @@ program tsunami
   !
   ! This version is parallelized and uses derived types.
 
+  use iso_fortran_env, only: int32, real32
   use mod_field, only: Field, diffx, diffy
-  use mod_kinds, only: ik, rk
 
   implicit none
 
-  integer(ik) :: n
+  integer(int32) :: n
 
-  integer(ik), parameter :: im = 101 ! grid size in x
-  integer(ik), parameter :: jm = 101 ! grid size in y
-  integer(ik), parameter :: num_time_steps = 1000 ! number of time steps
+  integer(int32), parameter :: im = 101 ! grid size in x
+  integer(int32), parameter :: jm = 101 ! grid size in y
+  integer(int32), parameter :: num_time_steps = 1000 ! number of time steps
 
-  real(rk), parameter :: dt = 0.02 ! time step [s]
-  real(rk), parameter :: dx = 1 ! grid spacing in x [m]
-  real(rk), parameter :: dy = 1 ! grid spacing in y [m]
-  real(rk), parameter :: g = 9.8 ! gravitational acceleration [m/s^2]
+  real(real32), parameter :: dt = 0.02 ! time step [s]
+  real(real32), parameter :: dx = 1 ! grid spacing in x [m]
+  real(real32), parameter :: dy = 1 ! grid spacing in y [m]
+  real(real32), parameter :: g = 9.8 ! gravitational acceleration [m/s^2]
 
-  integer(ik), parameter :: ic = 51, jc = 51
-  real(rk), parameter :: decay = 0.02
+  integer(int32), parameter :: ic = 51, jc = 51
+  real(real32), parameter :: decay = 0.02
 
   type(Field) :: h, u, v, hm
 

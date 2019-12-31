@@ -1,9 +1,10 @@
-# tsunami Makefile
+FC = gfortran
+FCFLAGS = -O3
+
+OBJS = mod_diff.o mod_initial.o
 
 .PHONY: all clean
 .SUFFIXES: .f90 .o
-
-OBJS = mod_diff.o mod_initial.o
 
 all: tsunami
 

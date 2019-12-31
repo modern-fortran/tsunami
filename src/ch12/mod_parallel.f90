@@ -3,7 +3,7 @@ module mod_parallel
   ! A module to provide parallel facilities
   ! to the shallow water solver.
 
-  use mod_kinds, only: ik, rk
+  use iso_fortran_env, only: int32, real32
 
   implicit none
 
@@ -19,10 +19,10 @@ contains
 
   pure function denominators(n)
     ! Returns all common denominators of n.
-    integer(ik), intent(in) :: n
-    integer(ik), allocatable :: denominators(:)
-    integer(ik) :: i
-    denominators = [integer(ik) ::]
+    integer(int32), intent(in) :: n
+    integer(int32), allocatable :: denominators(:)
+    integer(int32) :: i
+    denominators = [integer(int32) ::]
     do i = 1, n
       if (mod(n, i) == 0) denominators = [denominators, i]
     end do
@@ -40,19 +40,19 @@ contains
     !   * num_tiles(5) = [5, 1]
     !   * num_tiles(6) = [3, 2]
     !
-    integer(ik), intent(in) :: n
-    integer(ik) :: num_tiles(2)
-    integer(ik), allocatable :: denoms(:)
-    integer(ik), allocatable :: dim1(:), dim2(:)
-    integer(ik) :: i, j, n1, n2
+    integer(int32), intent(in) :: n
+    integer(int32) :: num_tiles(2)
+    integer(int32), allocatable :: denoms(:)
+    integer(int32), allocatable :: dim1(:), dim2(:)
+    integer(int32) :: i, j, n1, n2
 
     ! find all common denominators of the total number of images
     denoms = denominators(n)
 
     ! find all combinations of common denominators
     ! whose product equals the total number of images
-    dim1 = [integer(ik) ::]
-    dim2 = [integer(ik) ::]
+    dim1 = [integer(int32) ::]
+    dim2 = [integer(int32) ::]
     do j = 1, size(denoms)
       do i = 1, size(denoms)
         if (denoms(i) * denoms(j) == n) then
@@ -76,9 +76,9 @@ contains
   pure function tile_indices_1d(dims, i, n) result(indices)
     ! Given input global array size, return start and end index
     ! of a parallel 1-d tile that correspond to this image.
-    integer(ik), intent(in) :: dims, i, n
-    integer(ik) :: indices(2)
-    integer(ik) :: offset, tile_size
+    integer(int32), intent(in) :: dims, i, n
+    integer(int32) :: indices(2)
+    integer(int32) :: offset, tile_size
 
     tile_size = dims / n
 
@@ -99,9 +99,9 @@ contains
   pure function tile_indices_2d(dims) result(indices)
     ! Given an input x- and y- dimensions of the total computational domain [im, jm].
     ! returns an array of start and end indices in x- and y-, [is, ie, js, je].
-    integer(ik), intent(in) :: dims(2)
-    integer(ik) :: indices(4)
-    integer(ik) :: tiles(2), tiles_ij(2)
+    integer(int32), intent(in) :: dims(2)
+    integer(int32) :: indices(4)
+    integer(int32) :: tiles(2), tiles_ij(2)
     tiles = num_tiles(num_images())
     tiles_ij = tile_n2ij(this_image())
     indices(1:2) = tile_indices_1d(dims(1), tiles_ij(1), tiles(1))
@@ -112,8 +112,8 @@ contains
   pure function tile_neighbors_1d() result(neighbors)
     ! Returns the image indices corresponding
     ! to left and right neighbor tiles.
-    integer(ik) :: neighbors(2)
-    integer(ik) :: left, right
+    integer(int32) :: neighbors(2)
+    integer(int32) :: left, right
     if (num_images() > 1) then
       left = this_image() - 1
       right = this_image() + 1
@@ -146,8 +146,8 @@ contains
     !   * tile_n2ij(4) = [1, 2]
     !   * tile_n2ij(6) = [3, 2]
     !
-    integer(ik), intent(in) :: n
-    integer(ik) :: ij(2), i, j, tiles(2)
+    integer(int32), intent(in) :: n
+    integer(int32) :: ij(2), i, j, tiles(2)
     if (n == 0) then
       ij = 0
     else
@@ -175,8 +175,8 @@ contains
     !   * tile_ij2n([1, 2]) = 4
     !   * tile_ij2n([3, 2]) = 6
     !
-    integer(ik), intent(in) :: ij(2)
-    integer(ik) :: n, tiles(2)
+    integer(int32), intent(in) :: ij(2)
+    integer(int32) :: n, tiles(2)
     if (any(ij == 0)) then
       n = 0
     else
@@ -189,10 +189,10 @@ contains
   pure function tile_neighbors_2d(periodic) result(neighbors)
     ! Returns the neighbor image indices given.
     logical, intent(in) :: periodic
-    integer(ik) :: neighbors(4)
-    integer(ik) :: tiles(2), tiles_ij(2), itile, jtile
-    integer(ik) :: left, right, down, up
-    integer(ik) :: ij_left(2), ij_right(2), ij_down(2), ij_up(2)
+    integer(int32) :: neighbors(4)
+    integer(int32) :: tiles(2), tiles_ij(2), itile, jtile
+    integer(int32) :: left, right, down, up
+    integer(int32) :: ij_left(2), ij_right(2), ij_down(2), ij_up(2)
 
     tiles = num_tiles(num_images())
     tiles_ij = tile_n2ij(this_image())
@@ -230,12 +230,12 @@ contains
 
 
   subroutine sync_edges(a, indices)
-    real(rk), allocatable, intent(in out) :: a(:,:)
-    integer(ik), intent(in) :: indices(4)
-    real(rk), allocatable :: halo(:,:)[:]
-    integer(ik) :: tiles(2), neighbors(4)
-    integer(ik) :: is, ie, js, je
-    integer(ik) :: halo_size
+    real(real32), allocatable, intent(in out) :: a(:,:)
+    integer(int32), intent(in) :: indices(4)
+    real(real32), allocatable :: halo(:,:)[:]
+    integer(int32) :: tiles(2), neighbors(4)
+    integer(int32) :: is, ie, js, je
+    integer(int32) :: halo_size
 
     if (.not. allocated(a)) then
       error stop 'Error in update_halo: input array not allocated.'

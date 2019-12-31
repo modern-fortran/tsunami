@@ -2,7 +2,7 @@ module mod_io
 
   ! Provides input/output procedures.
 
-  use mod_kinds, only: ik, rk
+  use iso_fortran_env, only: int32, real32
 
   implicit none
 
@@ -13,10 +13,10 @@ contains
 
   subroutine write_field(field, fieldname, time)
     ! Writes a field into a binary file.
-    real(rk), intent(in) :: field(:,:)
+    real(real32), intent(in) :: field(:,:)
     character(len=*), intent(in) :: fieldname
-    integer(ik), intent(in) :: time
-    integer(ik) :: fileunit, record_length
+    integer(int32), intent(in) :: time
+    integer(int32) :: fileunit, record_length
     character(len=100) :: filename, timestr
     write(timestr, '(i4.4)') time
     filename = 'tsunami_' // fieldname // '_' // trim(timestr) // '.dat'

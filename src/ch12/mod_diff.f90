@@ -2,8 +2,7 @@ module mod_diff
 
   ! Finite difference functions.
 
-  use mod_kinds, only: ik, rk
-
+  use iso_fortran_env, only: int32, real32
   implicit none
 
   private
@@ -13,21 +12,21 @@ contains
 
   pure function diffx(x) result(dx)
     ! Centered finite difference in x.
-    real(rk), intent(in) :: x(:,:)
-    real(rk) :: dx(size(x, dim=1), size(x, dim=2))
-    integer(ik) :: i, im
+    real(real32), intent(in) :: x(:,:)
+    real(real32) :: dx(size(x, dim=1), size(x, dim=2))
+    integer(int32) :: i, im
     im = size(x, dim=1)
-    dx([1,im],:) = 0
+    dx = 0
     dx(2:im-1,:) = 0.5 * (x(3:im,:) - x(1:im-2,:))
   end function diffx
 
   pure function diffy(x) result(dx)
     ! Centered finite difference in y.
-    real(rk), intent(in) :: x(:,:)
-    real(rk) :: dx(size(x, dim=1), size(x, dim=2))
-    integer(ik) :: j, jm
+    real(real32), intent(in) :: x(:,:)
+    real(real32) :: dx(size(x, dim=1), size(x, dim=2))
+    integer(int32) :: j, jm
     jm = size(x, dim=2)
-    dx(:,[1,jm]) = 0
+    dx = 0
     dx(:,2:jm-1) = 0.5 * (x(:,3:jm) - x(:,1:jm-2))
   end function diffy
 
