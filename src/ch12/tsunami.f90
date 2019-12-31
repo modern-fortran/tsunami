@@ -17,6 +17,7 @@ program tsunami
   implicit none
 
   integer(ik) :: n
+  integer(ik) :: time_step_count[*]
 
   integer(ik), parameter :: im = 201 ! grid size in x
   integer(ik), parameter :: jm = 201 ! grid size in y
@@ -30,52 +31,84 @@ program tsunami
   integer(ik), parameter :: ic = im / 2 + 1, jc = jm / 2 + 1
   real(rk), parameter :: decay = 0.02
 
-  type(Field) :: h, u, v, hm
+  type(Field) :: h, hm, u, v
 
-  real(ik) :: hmin, hmax, hmean
+  type(team_type) :: new_team
+  integer(ik) :: team_num
 
-  u = Field('u', [im, jm])
-  v = Field('v', [im, jm])
-  h = Field('h', [im, jm])
-  hm = Field('hm', [im, jm])
+  type(event_type) :: time_step_event[*]
 
-  ! initialize a gaussian blob in the center
-  call h % init_gaussian(decay, ic, jc)
+  real(rk) :: hmin, hmax, hmean
 
-  ! set mean water depth
-  hm = 10.0
+  team_num = 1
+  if (this_image() == 1) team_num = 2
+  form team(team_num, new_team)
 
-  call h % write(0)
+  change team(new_team)
 
-  time_loop: do n = 1, num_time_steps
+    if (team_num == 1) then
 
-    hmin = minval(h % data)
-    call co_min(hmin, 1)
+    u = Field('u', [im, jm])
+    v = Field('v', [im, jm])
+    h = Field('h', [im, jm])
+    hm = Field('h_mean', [im, jm])
 
-    hmax = maxval(h % data)
-    call co_max(hmax, 1)
+    ! initialize a gaussian blob in the center
+    call h % init_gaussian(decay, ic, jc)
 
-    hmean = sum(h % data(h % lb(1):h % ub(1),h % lb(2):h % ub(2))) &
-         / size(h % data(h % lb(1):h % ub(1),h % lb(2):h % ub(2)))
-    call co_sum(hmean, 1)
-    hmean = hmean / num_images()
+    hm = 10.
 
-    if (this_image() == 1) print '(a, i5, 3(f9.4))', & 
-      'step, min(h), max(h), mean(h):', n, hmin, hmax, hmean
+    call h % write(0)
 
-    ! compute u at next time step
-    u = u - (u * diffx(u) / dx + v * diffy(u) / dy &
-      + g * diffx(h) / dx) * dt
+    time_loop: do n = 1, num_time_steps
 
-    ! compute v at next time step
-    v = v - (u * diffx(v) / dx + v * diffy(v) / dy &
-      + g * diffy(h) / dy) * dt
+      ! compute u at next time step
+      u = u - (u * diffx(u) / dx + v * diffy(u) / dy &
+        + g * diffx(h) / dx) * dt
 
-    ! compute h at next time step
-    h = h - (diffx(u * (hm + h)) / dx + diffy(v * (hm + h)) / dy) * dt
+      ! compute v at next time step
+      v = v - (u * diffx(v) / dx + v * diffy(v) / dy &
+        + g * diffy(h) / dy) * dt
 
-    call h % write(n)
+      ! compute h at next time step
+      h = h - (diffx(u * (hm + h)) / dx &
+             + diffy(v * (hm + h)) / dy) * dt
 
-  end do time_loop
+      hmin = minval(h % data)
+      call co_min(hmin, 1)
+
+      hmax = maxval(h % data)
+      call co_max(hmax, 1)
+
+      hmean = sum(h % data(h % lb(1):h % ub(1),h % lb(2):h % ub(2))) &
+           / size(h % data(h % lb(1):h % ub(1),h % lb(2):h % ub(2)))
+      call co_sum(hmean, 1)
+      hmean = hmean / num_images()
+
+      if (this_image() == 1) then
+        event post(time_step_event[1, team_number=2]) ! not implemented as of gcc-9.2.0 and OpenCoarrays-2.8.0
+        print '(a, i5, 3(f10.6))', 'step, min(h), max(h), mean(h):', &
+          n, hmin, hmax, hmean
+      end if
+
+      call h % write(n)
+
+    end do time_loop
+
+    else if (team_num == 2) then
+
+      n = 0
+      do
+        call event_query(time_step_event, time_step_count)
+        if (time_step_count > n) then
+          n = time_step_count
+          print *, 'tsunami logger: step ', n, 'of', num_time_steps, 'done'
+        end if
+        if (n == num_time_steps) exit
+      end do
+
+    end if
+
+  end team
 
 end program tsunami

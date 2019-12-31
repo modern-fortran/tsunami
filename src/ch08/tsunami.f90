@@ -8,26 +8,26 @@ program tsunami
   !     dv/dt + u dv/dx + v dv/dy + g dh/dy = 0
   !     dh/dt + d(hu)/dx + d(hv)/dy = 0
   !
-  ! This version is parallelized and uses derived types.
+  ! This version is parallelized, and uses derived types.
 
+  use iso_fortran_env, only: int32, real32
   use mod_field, only: Field, diffx, diffy
-  use mod_kinds, only: ik, rk
 
   implicit none
 
-  integer(ik) :: n
+  integer(int32) :: n
 
-  integer(ik), parameter :: im = 101 ! grid size in x
-  integer(ik), parameter :: jm = 101 ! grid size in y
-  integer(ik), parameter :: num_time_steps = 1000 ! number of time steps
+  integer(int32), parameter :: im = 101 ! grid size in x
+  integer(int32), parameter :: jm = 101 ! grid size in y
+  integer(int32), parameter :: num_time_steps = 1000 ! number of time steps
 
-  real(rk), parameter :: dt = 0.02 ! time step [s]
-  real(rk), parameter :: dx = 1 ! grid spacing in x [m]
-  real(rk), parameter :: dy = 1 ! grid spacing in y [m]
-  real(rk), parameter :: g = 9.8 ! gravitational acceleration [m/s^2]
+  real(real32), parameter :: dt = 0.02 ! time step [s]
+  real(real32), parameter :: dx = 1 ! grid spacing [m]
+  real(real32), parameter :: dy = 1 ! grid spacing [m]
+  real(real32), parameter :: g = 9.8 ! gravitational acceleration [m/s]
 
-  integer(ik), parameter :: ic = 51, jc = 51
-  real(rk), parameter :: decay = 0.02
+  integer(int32), parameter :: ic = 51, jc = 51
+  real(real32), parameter :: decay = 0.02
 
   type(Field) :: h, u, v, hm
 
@@ -40,27 +40,32 @@ program tsunami
 
   ! initialize a gaussian blob in the center
   call h % set_gaussian(decay, ic, jc)
+  call h % sync_edges()
 
   ! set mean water depth
-  hm = 10.0
+  hm = 10.
 
   call h % write(0)
 
   time_loop: do n = 1, num_time_steps
 
-    if (this_image() == 1) &
+    if (this_image() == 1) then
       print *, 'Computing time step', n, '/', num_time_steps
+    end if
 
     ! compute u at next time step
     u = u - (u * diffx(u) / dx + v * diffy(u) / dy &
       + g * diffx(h) / dx) * dt
+    call u % sync_edges()
 
     ! compute v at next time step
     v = v - (u * diffx(v) / dx + v * diffy(v) / dy &
       + g * diffy(h) / dy) * dt
+    call v % sync_edges()
 
     ! compute h at next time step
     h = h - (diffx(u * (hm + h)) / dx + diffy(v * (hm + h)) / dy) * dt
+    call h % sync_edges()
 
     call h % write(n)
 
