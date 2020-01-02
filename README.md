@@ -5,18 +5,18 @@ Companion running example for [Modern Fortran: Building Efficient Parallel Appli
 
 ## Organization
 
-* [**Chapter 2**](src/ch02): We implement our first working solver which solves for linear advection of a wave in one dimension.
+* [**Chapter 2**](https://github.com/modern-fortran/tsunami/tree/master/src/ch02): We implement our first working solver which solves for linear advection of a wave in one dimension.
 First encounter with declaration, variables, loops, branches, arithmetic, and writing to console.
-* [**Chapter 3**](src/ch03): We refactor our program from Chapter 2 to use procedures -- 
+* [**Chapter 3**](https://github.com/modern-fortran/tsunami/tree/master/src/ch03): We refactor our program from Chapter 2 to use procedures -- 
 a finite difference function and a subroutine to set initial conditions.
-* [**Chapter 4**](src/ch04): We refactor our program from Chapter 3 to define the procedures in external modules. 
+* [**Chapter 4**](https://github.com/modern-fortran/tsunami/tree/master/src/ch04): We refactor our program from Chapter 3 to define the procedures in external modules. 
 We use this opportunity to augment the simulator to solve for non-linear gravity waves.
-* [**Chapter 7**](src/ch07): We parallelize the program from Chapter 4 using coarrays and observe the speed up.
-* [**Chapter 8**](src/ch08): We refactor our program from Chapter 7 to model our physical quantities (water height and velocity)
+* [**Chapter 7**](https://github.com/modern-fortran/tsunami/tree/master/src/ch07): We parallelize the program from Chapter 4 using coarrays and observe the speed up.
+* [**Chapter 8**](https://github.com/modern-fortran/tsunami/tree/master/src/ch08): We refactor our program from Chapter 7 to model our physical quantities (water height and velocity)
 using a derived type, and implement common arithmetic operations as type-bound methods.
-* [**Chapter 10**](src/ch10): We continue working on the code from Chapter 9 and overload the assignment operator to 
+* [**Chapter 10**](https://github.com/modern-fortran/tsunami/tree/master/src/ch10): We continue working on the code from Chapter 9 and overload the assignment operator to 
 automatically synchronize the data across parallel images on every assignment.
-* [**Chapter 12**](src/ch12): In the final chapter, we revisit the parallel code from Chapter 10 and explore how Fortran 2018
+* [**Chapter 12**](https://github.com/modern-fortran/tsunami/tree/master/src/ch12): In the final chapter, we revisit the parallel code from Chapter 10 and explore how Fortran 2018
 Teams, Events, and Collectives can be used for some more advanced parallel patterns.
 
 ## Getting started
