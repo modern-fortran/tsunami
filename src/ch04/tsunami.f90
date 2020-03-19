@@ -31,7 +31,7 @@ program tsunami
   real(real32), parameter :: decay = 0.02
 
   ! check input parameter values
-  if (grid_size < 1) stop 'grid_size must be > 0'
+  if (grid_size <= 0) stop 'grid_size must be > 0'
   if (dt <= 0) stop 'time step dt must be > 0'
   if (dx <= 0) stop 'grid spacing dx must be > 0'
 
