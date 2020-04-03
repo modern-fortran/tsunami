@@ -1,6 +1,6 @@
 # tsunami
 
-A parallel shallow water equations solver. 
+A parallel tsunami simulator.
 Companion running example for [Modern Fortran: Building Efficient Parallel Applications](https://www.manning.com/books/modern-fortran?a_aid=modernfortran&a_bid=2dc4d442).
 
 ## Organization
@@ -35,7 +35,7 @@ or by downloading it as a [zip file](https://github.com/modern-fortran/tsunami/a
 
 ```
 cd tsunami
-make
+make -k
 ```
 
 You can compile the tsunami versions in chapters 2, 3, and 4

@@ -2,7 +2,7 @@
 
 .PHONY: all clean
 
-all: ch02 ch03 ch04 ch07 ch08 ch10 ch12
+all: ch02 ch03 ch04 ch07 ch08 ch10 ch12 final
 
 ch02:
 	$(MAKE) --directory=src/$@
@@ -25,6 +25,9 @@ ch10:
 ch12:
 	$(MAKE) --directory=src/$@
 
+final:
+	$(MAKE) --directory=src/$@
+
 clean:
 	$(MAKE) clean --directory=src/ch02
 	$(MAKE) clean --directory=src/ch03
@@ -33,3 +36,4 @@ clean:
 	$(MAKE) clean --directory=src/ch08
 	$(MAKE) clean --directory=src/ch10
 	$(MAKE) clean --directory=src/ch12
+	$(MAKE) clean --directory=src/final

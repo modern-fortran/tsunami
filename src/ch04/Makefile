@@ -16,8 +16,5 @@ tsunami: tsunami.f90 $(OBJS)
 
 %.o: %.mod
 
-mod_diff.o: mod_diff.f90
-mod_initial.o: mod_initial.f90
-
 clean:
 	$(RM) tsunami *.o *.mod

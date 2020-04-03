@@ -9,7 +9,7 @@ module mod_parallel
 
   private
   public :: num_tiles, tile_indices, tile_neighbors_1d, &
-            tile_neighbors_2d, sync_edges
+            tile_neighbors_2d
 
   interface tile_indices
     module procedure :: tile_indices_1d, tile_indices_2d
@@ -227,54 +227,5 @@ contains
     neighbors = [left, right, down, up]
 
   end function tile_neighbors_2d
-
-
-  subroutine sync_edges(a, indices)
-    real(real32), allocatable, intent(in out) :: a(:,:)
-    integer(int32), intent(in) :: indices(4)
-    real(real32), allocatable :: halo(:,:)[:]
-    integer(int32) :: tiles(2), neighbors(4)
-    integer(int32) :: is, ie, js, je
-    integer(int32) :: halo_size
-
-    if (.not. allocated(a)) then
-      error stop 'Error in update_halo: input array not allocated.'
-    end if
-
-    ! tile layout, neighbors, and indices
-    tiles = num_tiles(num_images())
-    neighbors = tile_neighbors_2d(periodic=.true.)
-
-    is = indices(1)
-    ie = indices(2)
-    js = indices(3)
-    je = indices(4)
-
-    halo_size = max(ie-is+1, je-js+1)
-    call co_max(halo_size)
-    if (.not. allocated(halo)) allocate(halo(halo_size, 4)[*])
-    halo = 0
-
-    !sync images(neighbors) !TODO currently fails with OpenCoarrays-2.2.0
-    sync all
-
-    ! copy data into coarray buffer
-    halo(1:je-js+1,1)[neighbors(1)] = a(is,js:je) ! send left
-    halo(1:je-js+1,2)[neighbors(2)] = a(ie,js:je) ! send right
-    halo(1:ie-is+1,3)[neighbors(3)] = a(is:ie,js) ! send down
-    halo(1:ie-is+1,4)[neighbors(4)] = a(is:ie,je) ! send up
-
-    !sync images(neighbors) !TODO currently fails with OpenCoarrays-2.2.0
-    sync all
-
-    ! copy from halo buffer into array
-    a(is-1,js:je) = halo(1:je-js+1,2) ! from left
-    a(ie+1,js:je) = halo(1:je-js+1,1) ! from right
-    a(is:ie,js-1) = halo(1:ie-is+1,4) ! from down
-    a(is:ie,je+1) = halo(1:ie-is+1,3) ! from up
-
-    deallocate(halo)
-
-  end subroutine sync_edges
 
 end module mod_parallel

@@ -29,7 +29,7 @@ module mod_field
     procedure, private, pass(self) :: field_add_field, field_add_real
     procedure, private, pass(self) :: field_sub_field, field_sub_real
     procedure, public, pass(self) :: gather
-    procedure, public, pass(self) :: set_gaussian
+    procedure, public, pass(self) :: init_gaussian
     procedure, public, pass(self) :: sync_edges
     procedure, public, pass(self) :: write
 
@@ -124,17 +124,17 @@ contains
     deallocate(gather_coarray)
   end function gather
 
-  subroutine set_gaussian(self, decay, ic, jc)
+  subroutine init_gaussian(self, decay, ic, jc)
     class(Field), intent(in out) :: self
-    real(real32), intent(in) :: decay ! the rate of decay of gaussian
-    integer(int32), intent(in) :: ic, jc ! center indices of the gaussian blob
+    real(real32), intent(in) :: decay
+    integer(int32), intent(in) :: ic, jc
     integer(int32) :: i, j
-    do concurrent(i = self % lb(1)-1:self % ub(1)+1,&
-                  j = self % lb(2)-1:self % ub(2)+1)
+    do concurrent(i = self % lb(1):self % ub(1),&
+                  j = self % lb(2):self % ub(2))
       self % data(i, j) = exp(-decay * ((i - ic)**2 + (j - jc)**2))
     end do
     call self % sync_edges()
-  end subroutine set_gaussian
+  end subroutine init_gaussian
 
   pure type(Field) function field_add_field(self, f) result(res)
     class(Field), intent(in) :: self, f
@@ -192,32 +192,31 @@ contains
   subroutine sync_edges(self)
     class(Field), intent(in out) :: self
     real(real32), allocatable, save :: edge(:,:)[:]
-    integer(int32) :: is, ie, js, je
 
-    is = self % lb(1)
-    ie = self % ub(1)
-    js = self % lb(2)
-    je = self % ub(2)
+    associate(is => self % lb(1), ie => self % ub(1),&
+              js => self % lb(2), je => self % ub(2),&
+              neighbors => self % neighbors)
 
-    if (.not. allocated(edge)) then
-      allocate(edge(self % edge_size, 4)[*])
-    end if
+      if (.not. allocated(edge)) &
+        allocate(edge(self % edge_size, 4)[*])
 
-    sync all
+      sync images(set(neighbors))
 
-    ! copy data into coarray buffer
-    edge(1:je-js+1,1)[self % neighbors(1)] = self % data(is,js:je) ! send left
-    edge(1:je-js+1,2)[self % neighbors(2)] = self % data(ie,js:je) ! send right
-    edge(1:ie-is+1,3)[self % neighbors(3)] = self % data(is:ie,js) ! send down
-    edge(1:ie-is+1,4)[self % neighbors(4)] = self % data(is:ie,je) ! send up
+      ! copy data into coarray buffer
+      edge(1:je-js+1,1)[neighbors(1)] = self % data(is,js:je) ! send left
+      edge(1:je-js+1,2)[neighbors(2)] = self % data(ie,js:je) ! send right
+      edge(1:ie-is+1,3)[neighbors(3)] = self % data(is:ie,js) ! send down
+      edge(1:ie-is+1,4)[neighbors(4)] = self % data(is:ie,je) ! send up
 
-    sync all
+      sync images(set(neighbors))
 
-    ! copy from halo buffer into array
-    self % data(is-1,js:je) = edge(1:je-js+1,2) ! from left
-    self % data(ie+1,js:je) = edge(1:je-js+1,1) ! from right
-    self % data(is:ie,js-1) = edge(1:ie-is+1,4) ! from down
-    self % data(is:ie,je+1) = edge(1:ie-is+1,3) ! from up
+      ! copy from halo buffer into array
+      self % data(is-1,js:je) = edge(1:je-js+1,2) ! from left
+      self % data(ie+1,js:je) = edge(1:je-js+1,1) ! from right
+      self % data(is:ie,js-1) = edge(1:ie-is+1,4) ! from down
+      self % data(is:ie,je+1) = edge(1:ie-is+1,3) ! from up
+
+    end associate
 
   end subroutine sync_edges
 
@@ -226,9 +225,17 @@ contains
     integer(int32), intent(in) :: n
     real(real32), allocatable :: gather(:,:)
     gather = self % gather(1)
-    if (this_image() == 1) then
-      call write_field(gather, self % name, n)
-    end if
+    if (this_image() == 1) call write_field(gather, self % name, n)
   end subroutine write
+
+  pure recursive function set(a) result(res)
+    integer, intent(in) :: a(:)
+    integer, allocatable :: res(:)
+    if (size(a) > 1) then
+      res = [a(1), set(pack(a(2:), .not. a(2:) == a(1)))]
+    else
+      res = a
+    end if
+  end function set
 
 end module mod_field
