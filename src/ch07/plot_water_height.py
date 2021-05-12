@@ -23,8 +23,8 @@ matplotlib.rcParams.update({'font.size': 16})
 data = [line.rstrip().split() for line in open(input_file).readlines()]
 
 time = [float(line[0]) for line in data]
-h = np.array([[float(x) for x in line[1:]] for line in data])
-x = np.arange(1, h.shape[1]+1)
+h = np.array([[float(x) for x in line[1:]] for line in data], dtype=object)
+x = np.arange(1, h.shape[0]+1)
 
 fig = plt.figure(figsize=(8, 3))
 ax = fig.add_axes((0.12, 0.2, 0.8, 0.7))
