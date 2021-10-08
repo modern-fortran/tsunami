@@ -13,12 +13,24 @@ input_file = args.input_file
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
+from sys import platform
+
+unicodeVar = 'utf-8'
+if platform == "linux" or platform == "linux2":
+    # linux
+    pass
+elif platform == "darwin":
+    # OS X
+    pass
+elif platform == "win32":
+    # Windows...
+    unicodeVar = 'utf-16'
 
 matplotlib.use('Agg')
 matplotlib.rcParams.update({'font.size': 16})
 
 # read data into a list
-data = [line.rstrip().split() for line in open(input_file).readlines()]
+data = [line.rstrip().split() for line in open(input_file, encoding = unicodeVar).readlines()]
 
 time = [float(line[0]) for line in data]
 h = np.array([[float(x) for x in line[1:]] for line in data])
