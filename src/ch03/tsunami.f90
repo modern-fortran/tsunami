@@ -23,6 +23,8 @@ program tsunami
   integer, parameter :: icenter = 25
   real, parameter :: decay = 0.02
 
+  character(*), parameter :: fmt = '(i0,1x,*(es15.8e2))'
+
   ! check input parameter values
   if (grid_size <= 0) stop 'grid_size must be > 0'
   if (dt <= 0) stop 'time step dt must be > 0'
@@ -33,7 +35,7 @@ program tsunami
   call set_gaussian(h, icenter, decay)
 
   ! write initial state to screen
-  print *, 0, h
+  print fmt, 0, h
 
   time_loop: do n = 1, num_time_steps
 
@@ -41,7 +43,7 @@ program tsunami
     h = h - c * diff(h) / dx * dt
 
     ! write current state to screen
-    print *, n, h
+    print fmt, n, h
 
   end do time_loop
 
