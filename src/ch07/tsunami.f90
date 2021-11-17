@@ -38,6 +38,8 @@ program tsunami
   integer(int32) :: ims, ime ! local start and end memory indices
   integer(int32) :: tile_size
 
+  character(*), parameter :: fmt = '(i0,1x,*(es15.8e2))'
+
   if (mod(grid_size, num_images()) > 0) then
     error stop 'Error: grid_size must be divisible by number of images'
   end if
@@ -74,7 +76,7 @@ program tsunami
   ! gather to image 1 and write current state to screen
   gather(is:ie)[1] = h(ils:ile)
   sync all
-  if (this_image() == 1) print *, 0, gather
+  if (this_image() == 1) print fmt, 0, gather
 
   time_loop: do n = 1, num_time_steps
 
@@ -99,7 +101,7 @@ program tsunami
     ! gather to image 1 and write current state to screen
     gather(is:ie)[1] = h(ils:ile)
     sync all
-    if (this_image() == 1) print *, n, gather
+    if (this_image() == 1) print fmt, n, gather
 
   end do time_loop
 
