@@ -54,3 +54,38 @@ source venv/bin/activate
 pip install -U pip
 pip install -U -r requirements.txt
 ```
+
+## Parallel scaling
+
+From Chapter 7 and onward, your tsunami program will be parallel. You may notice
+that running the program in parallel may be as fast as running it in serial, and
+perhaps even slower. This is because by default, the grid size is small enough
+for the program to complete in a short time on a single CPU. Specifically, in
+src/ch07/tsunami.f90:
+
+```
+  integer(int32), parameter :: grid_size = 100 ! grid size in x
+```
+
+is a very small grid. Further dividing it to multiple CPU cores may not yield
+enough computation load to compensate for the added communication load. Further,
+near the end of the main time loop, we gather the data to the first image and
+write it to screen in every time step:
+
+```
+    ! gather to image 1 and write current state to screen
+    gather(is:ie)[1] = h(ils:ile)
+    sync all
+    if (this_image() == 1) print fmt, n, gather
+```
+
+which significantly adds to the communication. Recall that we want to maximize
+computation and minimize communication for best parallel scalability results.
+
+To observe parallel speed-up with your tsunami program with increasing number
+of CPUs, make the following changes to the code:
+
+1. Increase `grid_size`. You can go as high as you want given enough RAM.
+2. Reduce output in the time loop from every time step, to perhaps every 10th
+   or 100th steps. These are just examples; pick the output frequency that
+   works best for you.
