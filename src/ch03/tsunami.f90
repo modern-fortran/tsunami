@@ -23,7 +23,7 @@ program tsunami
   integer, parameter :: icenter = 25
   real, parameter :: decay = 0.02
 
-  character(*), parameter :: fmt = '(i0,1x,*(es15.8e2))'
+  character(*), parameter :: fmt = '(i0,*(1x,es15.8e2))'
 
   ! check input parameter values
   if (grid_size <= 0) stop 'grid_size must be > 0'
