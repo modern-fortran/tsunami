@@ -52,7 +52,7 @@ program tsunami
     end do
 
     ! write current state to screen
-    print fmt, 0, h
+    print fmt, n, h
 
   end do time_loop
 
