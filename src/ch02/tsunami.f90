@@ -24,6 +24,7 @@ program tsunami
 
   ! check input parameter values
   if (grid_size <= 0) stop 'grid_size must be > 0'
+  if (num_time_steps <= 0) stop 'num_time_steps must be > 0'
   if (dt <= 0) stop 'time step dt must be > 0'
   if (dx <= 0) stop 'grid spacing dx must be > 0'
   if (c <= 0) stop 'background flow speed c must be > 0'
